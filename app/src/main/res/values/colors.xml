@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand / primary palette (light) -->
+    <color name="neo_primary">#4F5BD5</color>
+    <color name="neo_on_primary">#FFFFFF</color>
+    <color name="neo_primary_container">#DEE0FF</color>
+    <color name="neo_on_primary_container">#00115A</color>
+
+    <!-- Surface (light) -->
+    <color name="neo_surface">#FFFBFE</color>
+    <color name="neo_on_surface">#1A1B21</color>
+    <color name="neo_on_surface_variant">#46464F</color>
+
+    <!-- Error (light) -->
+    <color name="neo_error">#BA1A1A</color>
+    <color name="neo_on_error">#FFFFFF</color>
+
+    <!-- Launcher background -->
+    <color name="neo_launcher_background">#4F5BD5</color>
+
+    <!-- Semantic color referenced by the crash layout -->
+    <color name="status_error">@color/neo_error</color>
+</resources>

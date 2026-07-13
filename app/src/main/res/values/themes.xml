@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.NeoTools" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/neo_primary</item>
+        <item name="colorOnPrimary">@color/neo_on_primary</item>
+        <item name="colorPrimaryContainer">@color/neo_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/neo_on_primary_container</item>
+        <item name="colorSurface">@color/neo_surface</item>
+        <item name="colorOnSurface">@color/neo_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/neo_on_surface_variant</item>
+        <item name="colorError">@color/neo_error</item>
+        <item name="colorOnError">@color/neo_on_error</item>
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
+    </style>
+
+    <style name="Theme.NeoTools.Crash" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/neo_primary</item>
+        <item name="colorOnPrimary">@color/neo_on_primary</item>
+        <item name="colorSurface">@color/neo_surface</item>
+        <item name="colorOnSurface">@color/neo_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/neo_on_surface_variant</item>
+        <item name="colorError">@color/neo_error</item>
+        <item name="colorOnError">@color/neo_on_error</item>
+        <item name="android:statusBarColor">@color/neo_surface</item>
+        <item name="android:navigationBarColor">@color/neo_surface</item>
+    </style>
+</resources>

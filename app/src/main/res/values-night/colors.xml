@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Surface (dark) -->
+    <color name="neo_primary">#BBC3FF</color>
+    <color name="neo_on_primary">#00239A</color>
+    <color name="neo_primary_container">#2840C3</color>
+    <color name="neo_on_primary_container">#E0E0FF</color>
+
+    <color name="neo_surface">#121319</color>
+    <color name="neo_on_surface">#E4E1E6</color>
+    <color name="neo_on_surface_variant">#C7C5D0</color>
+
+    <color name="neo_error">#FFB4AB</color>
+    <color name="neo_on_error">#690005</color>
+
+    <color name="neo_launcher_background">#1A1C2E</color>
+    <color name="status_error">@color/neo_error</color>
+</resources>

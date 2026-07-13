@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Neo Tools</string>
+    <string name="app_tagline">Reverse Engineering Toolkit</string>
+
+    <string name="search_hint">Search categories…</string>
+    <string name="search_content_description">Search</string>
+    <string name="settings_content_description">Settings</string>
+    <string name="back_content_description">Back</string>
+    <string name="next_content_description">Open</string>
+
+    <string name="splash_loading">Initializing…</string>
+
+    <string name="permission_title">Permissions</string>
+    <string name="permission_subtitle">Grant the permissions required for Neo Tools to work.</string>
+    <string name="permission_continue">Continue</string>
+    <string name="permission_grant">Grant</string>
+    <string name="permission_granted">Granted</string>
+    <string name="permission_all_granted">All permissions granted</string>
+    <string name="permission_pending">Grant all permissions to continue</string>
+
+    <string name="home_title">Neo Tools</string>
+    <string name="empty_state_title">Nothing found</string>
+    <string name="empty_state_message">No categories match your search.</string>
+
+    <string name="coming_soon">Coming Soon</string>
+    <string name="tool_placeholder_body">This tool is not implemented yet. It will be available in a future update.</string>
+
+    <string name="crash_title">Crash Report</string>
+    <string name="crash_copy">Copy Log</string>
+    <string name="crash_restart">Restart App</string>
+    <string name="crash_send_report">Send anonymous crash report</string>
+</resources>
