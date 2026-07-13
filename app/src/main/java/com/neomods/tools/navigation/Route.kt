@@ -16,6 +16,8 @@ sealed class Screen(val route: String) {
     data object Permissions : Screen("permissions")
     data object AllSet : Screen("all_set")
     data object Home : Screen("home")
+    data object Settings : Screen("settings")
+    data object About : Screen("about")
 
     data object Category : Screen("category/{categoryId}") {
         const val ARG = "categoryId"

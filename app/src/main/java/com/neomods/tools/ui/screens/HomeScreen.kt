@@ -44,6 +44,7 @@ import com.neomods.tools.ui.theme.NeoDimens
 fun HomeScreen(
     onCategoryClick: (String) -> Unit,
     onToolClick: (String) -> Unit,
+    onSettingsClick: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
     var query by remember { mutableStateOf("") }
@@ -57,7 +58,7 @@ fun HomeScreen(
             NeoTopBar(
                 title = stringResource(R.string.home_title),
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onSettingsClick) {
                         Icon(
                             painter = painterResource(R.drawable.ic_settings),
                             contentDescription = stringResource(R.string.settings_content_description)

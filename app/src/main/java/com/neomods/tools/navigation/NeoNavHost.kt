@@ -17,6 +17,8 @@ import com.neomods.tools.ui.screens.Base64EncoderScreen
 import com.neomods.tools.ui.screens.CategoryScreen
 import com.neomods.tools.ui.screens.CrashOptInScreen
 import com.neomods.tools.ui.screens.HomeScreen
+import com.neomods.tools.ui.screens.about.AboutScreen
+import com.neomods.tools.ui.screens.settings.SettingsScreen
 import com.neomods.tools.ui.screens.PermissionScreen
 import com.neomods.tools.ui.screens.PlaceholderToolScreen
 import com.neomods.tools.ui.screens.SplashScreen
@@ -120,8 +122,20 @@ fun NeoNavHost(
                 },
                 onToolClick = { toolId ->
                     navController.navigate(Screen.Tool.create(toolId))
-                }
+                },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) }
             )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToAbout = { navController.navigate(Screen.About.route) }
+            )
+        }
+
+        composable(Screen.About.route) {
+            AboutScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(

@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -62,6 +63,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
@@ -104,8 +106,8 @@ fun Base64EncoderScreen(onBack: () -> Unit) {
     var pendingSave by remember { mutableStateOf<Base64Entry?>(null) }
 
     val pickImages = rememberLauncherForActivityResult(
-        OpenMultipleDocuments(arrayOf("image/*"))
-    ) { uris -> vm.addFiles(uris) }
+        ActivityResultContracts.PickMultipleVisualMedia()
+    ) { uris -> vm.addFiles(uris.filterNotNull()) }
 
     val pickFiles = rememberLauncherForActivityResult(
         OpenMultipleDocuments(arrayOf("*/*"))
@@ -152,9 +154,7 @@ fun Base64EncoderScreen(onBack: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            if (selected.isNotEmpty()) {
-                SelectedPreview(selected = selected, onRemove = vm::removeFile)
-            }
+            SelectedPreview(selected = selected, onRemove = vm::removeFile)
 
             // Hero "Select Files" button with the brand gradient.
             Box(
@@ -221,10 +221,12 @@ fun Base64EncoderScreen(onBack: () -> Unit) {
     if (showPickerDialog) {
         PickerDialog(
             onDismiss = { showPickerDialog = false },
-            onImage = {
-                showPickerDialog = false
-                pickImages.launch(Unit)
-            },
+                onImage = {
+                    showPickerDialog = false
+                    pickImages.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
             onFile = {
                 showPickerDialog = false
                 pickFiles.launch(Unit)
@@ -256,7 +258,29 @@ private fun SelectedPreview(
                 style = MaterialTheme.typography.titleSmall
             )
 
-            if (images.isNotEmpty()) {
+            if (selected.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_image),
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(R.string.base64_preview_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                if (images.isNotEmpty()) {
                 if (images.size == 1) {
                     UriImage(
                         uri = images[0].uri,
@@ -301,6 +325,7 @@ private fun SelectedPreview(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     files.forEach { sf -> FileChip(sf, onRemove) }
                 }
+            }
             }
         }
     }

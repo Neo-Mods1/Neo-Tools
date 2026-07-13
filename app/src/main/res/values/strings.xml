@@ -56,6 +56,7 @@
     <string name="base64_subtitle">Encode images and files to a single-line Base64 string — copy or save the result instantly.</string>
     <string name="base64_select_files">Select Files</string>
     <string name="base64_selected">Selected</string>
+    <string name="base64_preview_empty">Select images or files to preview them here.</string>
     <string name="base64_converted">Converted</string>
     <string name="base64_copy">Copy</string>
     <string name="base64_save">Save</string>
@@ -66,4 +67,32 @@
     <string name="base64_saved">Base64 saved</string>
     <string name="base64_save_failed">Could not save file</string>
     <string name="base64_size">Base64 · %1$s</string>
+
+    <string name="back">Back</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+
+    <string name="appearance">Appearance</string>
+    <string name="theme_mode">Theme</string>
+    <string name="system_theme">System</string>
+    <string name="light_theme">Light</string>
+    <string name="dark_theme">Dark</string>
+    <string name="dynamic_colors">Dynamic colors</string>
+    <string name="dynamic_colors_desc">Use system colors on Android 12 and above</string>
+
+    <string name="contact">Contact</string>
+    <string name="telegram_channel">Telegram Channel</string>
+    <string name="telegram_group">Telegram Group</string>
+
+    <string name="main_title">Neo Tools</string>
+    <string name="app_description">A premium reverse-engineering toolkit for Android.</string>
+    <string name="developer">Developer</string>
+    <string name="community">Community</string>
+    <string name="telegram_channel_desc">News, updates and releases</string>
+    <string name="telegram_group_desc">Chat with the community</string>
+    <string name="github_desc">Source code and issues</string>
+    <string name="youtube_desc">Tutorials and showcases</string>
+    <string name="report_bugs">Report Bugs</string>
+    <string name="report_bugs_contact">Found a bug? Let us know</string>
+    <string name="made_with">Made with love by Neo Mods</string>
 </resources>
