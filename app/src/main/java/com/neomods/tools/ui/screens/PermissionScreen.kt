@@ -1,5 +1,9 @@
 package com.neomods.tools.ui.screens
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -73,7 +77,18 @@ fun PermissionScreen(onAllGranted: () -> Unit) {
             return
         }
         if (permission.special) {
-            settingsLauncher.launch(PermissionManager.settingsIntent(context, permission))
+            try {
+                settingsLauncher.launch(PermissionManager.settingsIntent(context, permission))
+            } catch (_: ActivityNotFoundException) {
+                // Fallback: open app details if the specific settings screen isn't available
+                try {
+                    settingsLauncher.launch(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = android.net.Uri.parse("package:${context.packageName}")
+                        }
+                    )
+                } catch (_: Exception) { /* device doesn't support settings intents */ }
+            }
         } else if (permission.androidPermission != null) {
             requestPermissionLauncher.launch(permission.androidPermission)
         }

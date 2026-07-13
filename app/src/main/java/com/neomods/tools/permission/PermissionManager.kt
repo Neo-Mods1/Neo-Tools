@@ -39,18 +39,21 @@ object PermissionManager {
      * Special permissions cannot use the normal dialog and must be granted from
      * system settings.
      */
-    fun settingsIntent(context: Context, permission: Permission): Intent = when {
-        permission.special &&
-            permission.androidPermission == Manifest.permission.MANAGE_EXTERNAL_STORAGE &&
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-            Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION).apply {
-                data = Uri.parse("package:${context.packageName}")
+    fun settingsIntent(context: Context, permission: Permission): Intent {
+        val pkg = context.packageName
+        return when {
+            permission.special &&
+                permission.androidPermission == Manifest.permission.MANAGE_EXTERNAL_STORAGE &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION).apply {
+                    data = Uri.parse("package:$pkg")
+                }
             }
-        }
 
-        else -> {
-            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.parse("package:${context.packageName}")
+            else -> {
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:$pkg")
+                }
             }
         }
     }
