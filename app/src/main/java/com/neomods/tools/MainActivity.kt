@@ -47,11 +47,12 @@ private fun AppContent() {
 
     NeoToolsTheme(darkTheme = darkTheme, dynamicColor = dynamicColors) {
         val view = LocalView.current
+        val surfaceColor = MaterialTheme.colorScheme.surface
         if (!view.isInEditMode) {
             SideEffect {
                 val window = (view.context as ComponentActivity).window
-                window.statusBarColor = MaterialTheme.colorScheme.surface.toArgb()
-                window.navigationBarColor = MaterialTheme.colorScheme.surface.toArgb()
+                window.statusBarColor = surfaceColor.toArgb()
+                window.navigationBarColor = surfaceColor.toArgb()
                 WindowCompat.getInsetsController(window, view)
                     .isAppearanceLightStatusBars = !darkTheme
                 WindowCompat.getInsetsController(window, view)
