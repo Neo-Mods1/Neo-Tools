@@ -1,7 +1,5 @@
 package com.neomods.tools.ui.screens
 
-import androidx.compose.ui.unit.dp
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,13 +33,6 @@ import com.neomods.tools.ui.components.SectionHeader
 import com.neomods.tools.ui.components.ToolCard
 import com.neomods.tools.ui.theme.NeoDimens
 
-/**
- * Main entry screen after onboarding.
- *
- * Shows a searchable, adaptive two-column grid of categories. When the user
- * types, the grid live-filters categories and surfaces matching tools, so tool
- * search works without any UI changes.
- */
 @Composable
 fun HomeScreen(
     onCategoryClick: (String) -> Unit,
@@ -58,7 +49,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             NeoTopBar(
-                title = stringResource(R.string.home_title),
+                title = stringResource(R.string.app_name),
                 actions = {
                     IconButton(onClick = onSettingsClick) {
                         Icon(
@@ -69,36 +60,12 @@ fun HomeScreen(
                 }
             )
         }
-        ) { padding ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Hero header
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = NeoDimens.ScreenPadding,
-                        end = NeoDimens.ScreenPadding,
-                        top = NeoDimens.SectionSpacing,
-                        bottom = 4.dp
-                    )
-            ) {
-                Text(
-                    text = stringResource(R.string.home_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = stringResource(R.string.home_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-
             NeoSearchBar(
                 value = query,
                 onValueChange = { query = it },
@@ -116,7 +83,7 @@ fun HomeScreen(
                 EmptyState()
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 180.dp),
+                    columns = GridCells.Fixed(2),
                     horizontalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing),
                     verticalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing),
                     modifier = Modifier
@@ -126,9 +93,6 @@ fun HomeScreen(
                         bottom = NeoDimens.ScreenPadding
                     )
                 ) {
-                    item {
-                        SectionHeader(stringResource(R.string.home_section_categories))
-                    }
                     items(categoryResults, key = { it.id }) { category ->
                         CategoryCard(
                             category = category,

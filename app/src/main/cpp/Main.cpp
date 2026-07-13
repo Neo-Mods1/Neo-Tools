@@ -40,7 +40,7 @@ int RegisterEncoding(JNIEnv* env) {
     }
     return JNI_OK;
 }
-.
+
 int RegisterCppConverter(JNIEnv* env) {
     JNINativeMethod methods[] = {
         { OBFUSCATE("fileToHeader"),  OBFUSCATE("([BLjava/lang/String;)Ljava/lang/String;"),
