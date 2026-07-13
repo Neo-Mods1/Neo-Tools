@@ -18,6 +18,7 @@
     <string name="permission_granted">Granted</string>
     <string name="permission_all_granted">All permissions granted</string>
     <string name="permission_pending">Grant all permissions to continue</string>
+    <string name="permission_denied">Permission denied</string>
 
     <string name="home_title">Neo Tools</string>
     <string name="empty_state_title">Nothing found</string>

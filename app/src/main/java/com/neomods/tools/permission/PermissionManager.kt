@@ -45,7 +45,9 @@ object PermissionManager {
             permission.special &&
                 permission.androidPermission == Manifest.permission.MANAGE_EXTERNAL_STORAGE &&
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-                Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION).apply {
+                // Per-app all-files access toggle (opens THIS app's screen directly).
+                Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                    addCategory(Intent.CATEGORY_DEFAULT)
                     data = Uri.parse("package:$pkg")
                 }
             }
@@ -57,4 +59,11 @@ object PermissionManager {
             }
         }
     }
+
+    /**
+     * Fallback for devices where [Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION]
+     * is unavailable: opens the system-wide all-files access list.
+     */
+    fun settingsIntentFallback(): Intent =
+        Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
 }

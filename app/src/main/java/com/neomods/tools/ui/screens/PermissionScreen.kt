@@ -3,7 +3,9 @@ package com.neomods.tools.ui.screens
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Build
+import android.os.Environment
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -68,7 +70,13 @@ fun PermissionScreen(onAllGranted: () -> Unit) {
         ActivityResultContracts.StartActivityForResult()
     ) {
         viewModel.refresh(context)
-        if (viewModel.allGranted) onAllGranted()
+        if (viewModel.allGranted) {
+            onAllGranted()
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            !Environment.isExternalStorageManager()
+        ) {
+            Toast.makeText(context, R.string.permission_denied, Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun handleGrant(permission: Permission) {
@@ -77,17 +85,22 @@ fun PermissionScreen(onAllGranted: () -> Unit) {
             return
         }
         if (permission.special) {
+            // Primary: open THIS app's all-files access toggle directly.
+            // Fallback: system-wide list, then app details if even that is missing.
             try {
                 settingsLauncher.launch(PermissionManager.settingsIntent(context, permission))
             } catch (_: ActivityNotFoundException) {
-                // Fallback: open app details if the specific settings screen isn't available
                 try {
-                    settingsLauncher.launch(
-                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                            data = android.net.Uri.parse("package:${context.packageName}")
-                        }
-                    )
-                } catch (_: Exception) { /* device doesn't support settings intents */ }
+                    settingsLauncher.launch(PermissionManager.settingsIntentFallback())
+                } catch (_: Exception) {
+                    try {
+                        settingsLauncher.launch(
+                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = android.net.Uri.parse("package:${context.packageName}")
+                            }
+                        )
+                    } catch (_: Exception) { /* device doesn't support settings intents */ }
+                }
             }
         } else if (permission.androidPermission != null) {
             requestPermissionLauncher.launch(permission.androidPermission)
