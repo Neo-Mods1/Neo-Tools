@@ -30,10 +30,11 @@ import com.neomods.tools.model.Tool
 import com.neomods.tools.ui.theme.NeoDimens
 
 /**
- * Large monochrome lead icon used across the premium "toolbox" cards.
+ * Large lead icon used across the premium "toolbox" cards.
  *
- * Per the design language the icon has no tinted background — it floats above
- * the text and uses the single accent colour (the theme [primary]).
+ * Rendered in the drawable's own colours (no forced accent tint) so the
+ * multicolour category/tool icons keep their native look. White monochrome
+ * (XML) icons are expected to be swapped for coloured PNGs over time.
  */
 @Composable
 fun LeadIcon(
@@ -41,7 +42,7 @@ fun LeadIcon(
     contentDescription: String,
     modifier: Modifier = Modifier,
     size: androidx.compose.ui.unit.Dp = NeoDimens.LeadIconSize,
-    tint: Color = MaterialTheme.colorScheme.primary
+    tint: Color = Color.Unspecified
 ) {
     Icon(
         painter = painterResource(iconRes),

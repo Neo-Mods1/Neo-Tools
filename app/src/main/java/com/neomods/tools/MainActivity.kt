@@ -15,7 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import com.neomods.tools.navigation.NeoNavHost
 import com.neomods.tools.storage.SettingsManager
-import com.neomods.tools.theme.NeoToolsTheme
+import com.neomods.tools.ui.theme.NeoToolsTheme
 import com.neomods.tools.theme.ThemeMode
 import androidx.compose.runtime.collectAsState
 
