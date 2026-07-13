@@ -1,4 +1,5 @@
 package com.neomods.tools.ui.components
+import androidx.compose.ui.unit.dp
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

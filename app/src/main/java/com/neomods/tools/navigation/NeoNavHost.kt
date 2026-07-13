@@ -15,6 +15,8 @@ import com.neomods.tools.ui.screens.HomeScreen
 import com.neomods.tools.ui.screens.PermissionScreen
 import com.neomods.tools.ui.screens.PlaceholderToolScreen
 import com.neomods.tools.ui.screens.SplashScreen
+import com.neomods.tools.category.CategoryViewModel
+import com.neomods.tools.tools.ToolViewModel
 
 /**
  * Application navigation graph.
