@@ -47,8 +47,8 @@ internal class DefaultToolRepository : ToolRepository {
         ),
         "xml" to listOf(),
         "encoding" to listOf(
-            Tool("enc_base64", "encoding", "Base64 Encoder", "Encode images and files to Base64", R.drawable.ic_cat_binary, "Encode"),
-            Tool("dec_base64", "encoding", "Base64 Decoder", "Decode Base64 back to files and text", R.drawable.ic_cat_binary, "Decode")
+            Tool("enc_base64", "encoding", "Base64 Encoder", "Encode images and files to Base64", R.drawable.ic_cat_binary, "Base64"),
+            Tool("dec_base64", "encoding", "Base64 Decoder", "Decode Base64 back to files and text", R.drawable.ic_cat_binary, "Base64")
         )
     )
 

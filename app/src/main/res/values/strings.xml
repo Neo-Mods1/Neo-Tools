@@ -87,6 +87,9 @@
     <string name="decoder_load_dialog_title">Load Base64 from…</string>
     <string name="decoder_load_from_file">Text file (.txt)</string>
 
+    <string name="ui_scale">UI Scale</string>
+    <string name="ui_scale_desc">Adjust the overall size of interface elements</string>
+
     <string name="back">Back</string>
     <string name="settings">Settings</string>
     <string name="about">About</string>

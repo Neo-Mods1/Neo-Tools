@@ -38,11 +38,16 @@ private fun AppContent() {
     val settings = remember { SettingsManager(context) }
     val themeMode by settings.themeMode.collectAsState()
     val dynamicColors by settings.dynamicColors.collectAsState()
+    val uiScale by settings.uiScale.collectAsState()
 
     val darkTheme = when (themeMode) {
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
         else -> isSystemInDarkTheme()
+    }
+
+    LaunchedEffect(uiScale) {
+        settings.applyUiScale(context, uiScale)
     }
 
     NeoToolsTheme(darkTheme = darkTheme, dynamicColor = dynamicColors) {

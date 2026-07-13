@@ -34,6 +34,7 @@ fun SettingsScreen(
     val settingsManager = remember { SettingsManager(context) }
     val currentTheme by settingsManager.themeMode.collectAsState()
     val dynamicColors by settingsManager.dynamicColors.collectAsState()
+    val uiScale by settingsManager.uiScale.collectAsState()
 
     Scaffold(
         topBar = {
@@ -147,6 +148,74 @@ fun SettingsScreen(
                                 checked = dynamicColors,
                                 onCheckedChange = { scope.launch { settingsManager.setDynamicColors(it) } }
                             )
+                        }
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.FormatSize,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.ui_scale),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = "%.0f%%".format(uiScale * 100),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Text(
+                                text = stringResource(R.string.ui_scale_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 28.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Slider(
+                                value = uiScale,
+                                onValueChange = { newScale ->
+                                    scope.launch {
+                                        settingsManager.setUiScale(newScale)
+                                        settingsManager.applyUiScale(context, newScale)
+                                    }
+                                },
+                                valueRange = 0.75f..1.5f,
+                                steps = 5,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 28.dp)
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 28.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "75%",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "100%",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Text(
+                                    text = "150%",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
