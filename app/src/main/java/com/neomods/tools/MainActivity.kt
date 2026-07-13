@@ -12,6 +12,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -49,6 +50,8 @@ private fun AppContent() {
         if (!view.isInEditMode) {
             SideEffect {
                 val window = (view.context as ComponentActivity).window
+                window.statusBarColor = MaterialTheme.colorScheme.surface.toArgb()
+                window.navigationBarColor = MaterialTheme.colorScheme.surface.toArgb()
                 WindowCompat.getInsetsController(window, view)
                     .isAppearanceLightStatusBars = !darkTheme
                 WindowCompat.getInsetsController(window, view)
