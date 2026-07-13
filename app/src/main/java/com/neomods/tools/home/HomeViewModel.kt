@@ -30,6 +30,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     fun searchTools(query: String): List<Tool> =
         if (query.isBlank()) emptyList() else toolRepository.searchTools(query)
 
+    /** Number of tools inside the category with [categoryId] (for the Home card). */
+    fun toolCount(categoryId: String): Int = toolRepository.getToolCount(categoryId)
+
     /** Combined results (categories first, then tools) for a query. */
     fun search(query: String): List<SearchResult> = buildList {
         categoryRepository.searchCategories(query).mapTo(this) { SearchResult.CategoryResult(it) }

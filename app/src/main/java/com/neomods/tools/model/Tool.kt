@@ -14,6 +14,8 @@ import androidx.compose.runtime.Immutable
  * @param title       Display name.
  * @param description Short summary shown under the title.
  * @param iconRes     Drawable resource for the tool icon.
+ * @param group       Logical grouping used to section tools inside a category
+ *                    (e.g. "Analysis", "Editing", "Build").
  */
 @Immutable
 data class Tool(
@@ -21,5 +23,6 @@ data class Tool(
     val categoryId: String,
     val title: String,
     val description: String,
-    val iconRes: Int
+    val iconRes: Int,
+    val group: String = ""
 )

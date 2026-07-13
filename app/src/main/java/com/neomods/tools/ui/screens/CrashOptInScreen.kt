@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.neomods.tools.R
 import com.neomods.tools.crash.CrashReporter
-import com.neomods.tools.ui.components.IconContainer
+import com.neomods.tools.ui.components.LeadIcon
 import com.neomods.tools.ui.theme.NeoDimens
 
 /**
@@ -48,7 +48,7 @@ fun CrashOptInScreen(onContinue: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            IconContainer(
+            LeadIcon(
                 iconRes = R.drawable.ic_settings,
                 contentDescription = stringResource(R.string.app_name),
                 size = 64.dp

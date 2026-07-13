@@ -12,11 +12,14 @@ import androidx.compose.runtime.Immutable
  * @param title     Display name.
  * @param description Short summary shown under the title.
  * @param iconRes   Drawable resource for the category icon.
+ * @param tags      A few representative tool names surfaced on the Home card
+ *                  (e.g. "Dex • Smali • Manifest") so users see what's inside.
  */
 @Immutable
 data class Category(
     val id: String,
     val title: String,
     val description: String,
-    val iconRes: Int
+    val iconRes: Int,
+    val tags: List<String> = emptyList()
 )

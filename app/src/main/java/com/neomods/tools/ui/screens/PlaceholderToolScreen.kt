@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.neomods.tools.R
 import com.neomods.tools.tools.ToolViewModel
-import com.neomods.tools.ui.components.IconContainer
+import com.neomods.tools.ui.components.LeadIcon
 import com.neomods.tools.ui.components.NeoTopBar
 import com.neomods.tools.ui.theme.NeoDimens
 
@@ -60,7 +60,7 @@ fun PlaceholderToolScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 if (tool != null) {
-                    IconContainer(
+                    LeadIcon(
                         iconRes = tool.iconRes,
                         contentDescription = tool.title,
                         size = 96.dp

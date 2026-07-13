@@ -1,4 +1,5 @@
 package com.neomods.tools.ui.screens
+
 import androidx.compose.ui.unit.dp
 
 import androidx.compose.foundation.layout.Arrangement
@@ -36,8 +37,8 @@ import com.neomods.tools.ui.theme.NeoDimens
  * Main entry screen after onboarding.
  *
  * Shows a searchable, adaptive two-column grid of categories. When the user
- * types, the grid live-filters categories and (already) surfaces matching
- * tools, demonstrating that tool search can be added without UI changes.
+ * types, the grid live-filters categories and surfaces matching tools, so tool
+ * search works without any UI changes.
  */
 @Composable
 fun HomeScreen(
@@ -88,7 +89,7 @@ fun HomeScreen(
                 EmptyState()
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 160.dp),
+                    columns = GridCells.Adaptive(minSize = 180.dp),
                     horizontalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing),
                     verticalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing),
                     modifier = Modifier
@@ -98,24 +99,27 @@ fun HomeScreen(
                         bottom = NeoDimens.ScreenPadding
                     )
                 ) {
-                    if (hasQuery && (categoryResults.isNotEmpty() || toolResults.isNotEmpty())) {
-                        item { SectionHeader("Categories") }
+                    item {
+                        SectionHeader(stringResource(R.string.home_section_categories))
                     }
                     items(categoryResults, key = { it.id }) { category ->
                         CategoryCard(
                             category = category,
+                            toolCount = viewModel.toolCount(category.id),
                             onClick = { onCategoryClick(category.id) }
                         )
                     }
 
                     if (hasQuery && toolResults.isNotEmpty()) {
-                        item { SectionHeader("Tools") }
-                    }
-                    items(toolResults, key = { it.id }) { tool ->
-                        ToolCard(
-                            tool = tool,
-                            onClick = { onToolClick(tool.id) }
-                        )
+                        item {
+                            SectionHeader(stringResource(R.string.home_section_tools))
+                        }
+                        items(toolResults, key = { it.id }) { tool ->
+                            ToolCard(
+                                tool = tool,
+                                onClick = { onToolClick(tool.id) }
+                            )
+                        }
                     }
                 }
             }

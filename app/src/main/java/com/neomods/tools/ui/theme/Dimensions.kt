@@ -8,13 +8,19 @@ import androidx.compose.ui.unit.dp
  */
 object NeoDimens {
     val ScreenPadding = 16.dp
-    val CardPadding = 16.dp
-    val CardCorner = 16.dp
-    val SectionSpacing = 8.dp
+    val CardPadding = 18.dp
+    val CardCorner = 22.dp
+    val SectionSpacing = 12.dp
+    val GroupSpacing = 8.dp
 
     val IconSize = 24.dp
-    val IconContainerSize = 48.dp
-    val IconContainerCorner = 14.dp
+
+    /** Large monochrome lead icons (no background) used on the premium cards. */
+    val LeadIconSize = 46.dp
+    val LeadIconSizeLarge = 56.dp
+
+    /** Default card elevation for the surfaced, "toolbox" look. */
+    val CardElevation = 2.dp
 
     val SearchBarCorner = 28.dp
 }

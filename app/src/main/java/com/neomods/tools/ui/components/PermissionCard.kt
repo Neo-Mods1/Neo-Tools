@@ -49,7 +49,7 @@ fun PermissionCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing)
         ) {
-            IconContainer(
+            LeadIcon(
                 iconRes = permission.iconRes,
                 contentDescription = permission.title
             )
