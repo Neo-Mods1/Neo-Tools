@@ -12,6 +12,8 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
+val hasKeystore = keystorePropertiesFile.exists()
+
 android {
     namespace = "com.neomods.tools"
     compileSdk = 35
@@ -32,7 +34,7 @@ android {
     
     signingConfigs {
         create("appSigning") {
-            if (keystorePropertiesFile.exists()) {
+            if (hasKeystore) {
                 storeFile = file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
                 keyAlias = keystoreProperties["keyAlias"] as String
@@ -47,6 +49,10 @@ android {
             isShrinkResources = true
             applicationIdSuffix = ".debug"
             isDebuggable = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             if (hasKeystore) {
                 signingConfig = signingConfigs.getByName("appSigning")
             }
