@@ -53,6 +53,7 @@
     <string name="cancel">Cancel</string>
 
     <string name="base64_title">Base64 Encoder</string>
+    <string name="base64_subtitle">Encode images and files to a single-line Base64 string — copy or save the result instantly.</string>
     <string name="base64_select_files">Select Files</string>
     <string name="base64_selected">Selected</string>
     <string name="base64_converted">Converted</string>

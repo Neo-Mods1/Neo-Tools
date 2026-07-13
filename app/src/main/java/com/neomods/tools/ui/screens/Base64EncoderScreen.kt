@@ -10,6 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,12 +30,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -53,6 +55,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -70,13 +74,14 @@ import com.neomods.tools.encoding.Base64Entry
 import com.neomods.tools.encoding.SelectedFile
 import com.neomods.tools.ui.components.NeoTopBar
 import com.neomods.tools.ui.theme.NeoDimens
+import com.neomods.tools.ui.theme.NeoGradients
 
 /**
  * Fully functional Base64 Encoder tool.
  *
  * Layout (top to bottom):
  *  1. Selected files preview (images in a responsive gallery, others as cards)
- *  2. "Select Files" button -> Material 3 dialog (Image / File)
+ *  2. Gradient "Select Files" hero -> Material 3 dialog (Image / File)
  *  3. Converted list: each row has a thumbnail/icon, truncated name, encoded
  *     size, copy and save actions.
  *
@@ -141,25 +146,47 @@ fun Base64EncoderScreen(onBack: () -> Unit) {
                 .padding(NeoDimens.ScreenPadding),
             verticalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing)
         ) {
+            Text(
+                text = stringResource(R.string.base64_subtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
             if (selected.isNotEmpty()) {
                 SelectedPreview(selected = selected, onRemove = vm::removeFile)
             }
 
-            Button(
-                onClick = { showPickerDialog = true },
-                modifier = Modifier.fillMaxWidth()
+            // Hero "Select Files" button with the brand gradient.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(NeoGradients.Primary)
+                    .clickable { showPickerDialog = true }
+                    .padding(vertical = 15.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_image),
-                    contentDescription = null,
-                    modifier = Modifier.size(NeoDimens.IconSize)
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.base64_select_files))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_image),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(NeoDimens.IconSize)
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = stringResource(R.string.base64_select_files),
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
 
             if (isEncoding) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
 
             if (entries.isNotEmpty()) {
@@ -217,7 +244,7 @@ private fun SelectedPreview(
     Card(
         shape = RoundedCornerShape(NeoDimens.CardCorner),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
         Column(
@@ -237,6 +264,11 @@ private fun SelectedPreview(
                             .fillMaxWidth()
                             .heightIn(max = 260.dp)
                             .clip(RoundedCornerShape(16.dp))
+                            .border(
+                                1.dp,
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
+                                RoundedCornerShape(16.dp)
+                            )
                     )
                 } else {
                     LazyVerticalGrid(
@@ -254,6 +286,11 @@ private fun SelectedPreview(
                                 modifier = Modifier
                                     .aspectRatio(1f)
                                     .clip(RoundedCornerShape(14.dp))
+                                    .border(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
+                                        RoundedCornerShape(14.dp)
+                                    )
                             )
                         }
                     }
@@ -276,15 +313,28 @@ private fun FileChip(file: SelectedFile, onRemove: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(MaterialTheme.colorScheme.surface)
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.18f),
+                RoundedCornerShape(12.dp)
+            )
             .padding(10.dp)
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_file),
-            contentDescription = null,
-            modifier = Modifier.size(28.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_file),
+                contentDescription = null,
+                modifier = Modifier.size(22.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
         Spacer(Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -316,7 +366,10 @@ private fun ConvertedRow(
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = NeoDimens.CardElevation)
+        elevation = CardDefaults.cardElevation(defaultElevation = NeoDimens.CardElevation),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -324,26 +377,26 @@ private fun ConvertedRow(
                 .fillMaxWidth()
                 .padding(10.dp)
         ) {
-            if (entry.isImage) {
-                UriImage(
-                    uri = entry.uri,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                if (entry.isImage) {
+                    UriImage(
+                        uri = entry.uri,
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                    )
+                } else {
                     Icon(
                         painter = painterResource(R.drawable.ic_file),
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }
@@ -358,19 +411,22 @@ private fun ConvertedRow(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = stringResource(R.string.base64_size, formatSize(entry.encodedSize.toLong())),
+                    text = stringResource(
+                        R.string.base64_size,
+                        formatSize(entry.encodedSize.toLong())
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            IconButton(onClick = { onCopy(entry) }) {
+            FilledTonalIconButton(onClick = { onCopy(entry) }) {
                 Icon(
                     painter = painterResource(R.drawable.ic_copy),
                     contentDescription = stringResource(R.string.base64_copy)
                 )
             }
-            IconButton(onClick = { onSave(entry) }) {
+            FilledTonalIconButton(onClick = { onSave(entry) }) {
                 Icon(
                     painter = painterResource(R.drawable.ic_save),
                     contentDescription = stringResource(R.string.base64_save)
@@ -416,15 +472,24 @@ private fun DialogOption(icon: Int, label: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer)
             .clickable(onClick = onClick)
             .padding(12.dp)
     ) {
-        Icon(
-            painter = painterResource(icon),
-            contentDescription = null,
-            modifier = Modifier.size(28.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                modifier = Modifier.size(22.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
         Spacer(Modifier.width(12.dp))
         Text(label, style = MaterialTheme.typography.bodyLarge)
     }

@@ -24,9 +24,19 @@ private val DarkColorScheme = darkColorScheme(
     onPrimary = NeoOnPrimary,
     primaryContainer = NeoPrimaryContainer,
     onPrimaryContainer = NeoOnPrimaryContainer,
+    secondary = NeoSecondary,
+    onSecondary = NeoOnSecondary,
+    secondaryContainer = NeoSecondaryContainer,
+    onSecondaryContainer = NeoOnSecondaryContainer,
+    tertiary = NeoTertiary,
+    onTertiary = NeoOnTertiary,
+    tertiaryContainer = NeoTertiaryContainer,
+    onTertiaryContainer = NeoOnTertiaryContainer,
     surface = NeoSurfaceDark,
     onSurface = NeoOnSurfaceDark,
     onSurfaceVariant = NeoOnSurfaceVariantDark,
+    surfaceVariant = NeoSurfaceVariantDark,
+    outline = NeoOutlineDark,
     error = NeoErrorDark
 )
 
@@ -35,9 +45,19 @@ private val LightColorScheme = lightColorScheme(
     onPrimary = NeoOnPrimary,
     primaryContainer = NeoPrimaryContainer,
     onPrimaryContainer = NeoOnPrimaryContainer,
+    secondary = NeoSecondary,
+    onSecondary = NeoOnSecondary,
+    secondaryContainer = NeoSecondaryContainer,
+    onSecondaryContainer = NeoOnSecondaryContainer,
+    tertiary = NeoTertiary,
+    onTertiary = NeoOnTertiary,
+    tertiaryContainer = NeoTertiaryContainer,
+    onTertiaryContainer = NeoOnTertiaryContainer,
     surface = NeoSurfaceLight,
     onSurface = NeoOnSurfaceLight,
     onSurfaceVariant = NeoOnSurfaceVariantLight,
+    surfaceVariant = NeoSurfaceVariantLight,
+    outline = NeoOutlineLight,
     error = NeoError
 )
 
