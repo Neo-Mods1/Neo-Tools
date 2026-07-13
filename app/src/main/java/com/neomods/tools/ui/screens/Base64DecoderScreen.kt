@@ -35,7 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -60,15 +59,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.EditText
+import android.widget.ScrollView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import com.neomods.tools.R
 import com.neomods.tools.encoding.Base64DecoderViewModel
 import com.neomods.tools.encoding.DecodedContentType
 import com.neomods.tools.ui.components.NeoTopBar
 import com.neomods.tools.ui.theme.NeoDimens
 import java.io.File
+import android.text.TextWatcher
+import android.text.Editable
 
 @Composable
 fun Base64DecoderScreen(onBack: () -> Unit) {
@@ -115,7 +117,7 @@ fun Base64DecoderScreen(onBack: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            // Input card
+            // Input card — fixed height, scrolls internally
             Card(
                 shape = RoundedCornerShape(NeoDimens.CardCorner),
                 colors = CardDefaults.cardColors(
@@ -130,24 +132,50 @@ fun Base64DecoderScreen(onBack: () -> Unit) {
                         text = stringResource(R.string.decoder_input_label),
                         style = MaterialTheme.typography.titleSmall
                     )
-                    OutlinedTextField(
-                        value = inputText,
-                        onValueChange = { vm.updateInput(it) },
+
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 140.dp),
-                        placeholder = {
-                            Text(
-                                text = stringResource(R.string.decoder_input_hint),
-                                style = MaterialTheme.typography.bodyMedium
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(
+                                1.dp,
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                                RoundedCornerShape(12.dp)
                             )
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    )
+                    ) {
+                        AndroidView(
+                            factory = { ctx ->
+                                EditText(ctx).apply {
+                                    hint = "Paste your Base64 string here…"
+                                    setText(inputText)
+                                    isSingleLine = false
+                                    maxLines = Int.MAX_VALUE
+                                    textSize = 14f
+                                    setPadding(16, 12, 16, 12)
+                                    setBackgroundColor(0x00000000)
+                                    setTextColor(ctx.getColor(android.R.color.black))
+                                    addTextChangedListener(object : TextWatcher {
+                                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                                        override fun afterTextChanged(s: Editable?) {
+                                            vm.updateInput(s?.toString() ?: "")
+                                        }
+                                    })
+                                    // Prevent parent Column from stealing scroll
+                                    isFocusable = true
+                                    isFocusableInTouchMode = true
+                                }
+                            },
+                            update = { editText ->
+                                if (editText.text.toString() != inputText) {
+                                    editText.setText(inputText)
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -235,20 +263,29 @@ fun Base64DecoderScreen(onBack: () -> Unit) {
                                 containerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
                         ) {
-                            OutlinedTextField(
-                                value = decoded.text ?: "",
-                                onValueChange = {},
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .heightIn(min = 100.dp, max = 300.dp)
-                                    .padding(NeoDimens.CardPadding),
-                                readOnly = true,
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            )
+                                    .height(200.dp)
+                                    .padding(NeoDimens.CardPadding)
+                            ) {
+                                AndroidView(
+                                    factory = { ctx ->
+                                        EditText(ctx).apply {
+                                            setText(decoded.text ?: "")
+                                            isSingleLine = false
+                                            maxLines = Int.MAX_VALUE
+                                            isFocusable = false
+                                            isFocusableInTouchMode = false
+                                            textSize = 14f
+                                            setPadding(16, 12, 16, 12)
+                                            setBackgroundColor(0x00000000)
+                                            setTextColor(ctx.getColor(android.R.color.black))
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
                         }
                     }
                     DecodedContentType.BINARY -> {
@@ -298,7 +335,7 @@ fun Base64DecoderScreen(onBack: () -> Unit) {
                     }
                 }
 
-                // Action row
+                // Action row — copy + save for all types
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing)
@@ -309,30 +346,41 @@ fun Base64DecoderScreen(onBack: () -> Unit) {
                             contentDescription = stringResource(R.string.decoder_copy)
                         )
                     }
-                    if (decoded.contentType == DecodedContentType.BINARY) {
-                        val saveLauncher = rememberLauncherForActivityResult(
-                            SaveBinaryFile()
-                        ) { uri ->
-                            if (uri != null) {
-                                runCatching {
-                                    context.contentResolver.openOutputStream(uri)?.use { os ->
-                                        os.write(decoded.bytes)
-                                    }
-                                }.onSuccess {
-                                    vm.notify(context.getString(R.string.decoder_saved))
-                                }.onFailure {
-                                    vm.notify(context.getString(R.string.decoder_save_failed))
+
+                    val saveLauncher = rememberLauncherForActivityResult(
+                        SaveBinaryFile()
+                    ) { uri ->
+                        if (uri != null) {
+                            runCatching {
+                                context.contentResolver.openOutputStream(uri)?.use { os ->
+                                    os.write(decoded.bytes)
                                 }
+                            }.onSuccess {
+                                vm.notify(context.getString(R.string.decoder_saved))
+                            }.onFailure {
+                                vm.notify(context.getString(R.string.decoder_save_failed))
                             }
                         }
-                        FilledTonalIconButton(onClick = {
-                            saveLauncher.launch("decoded_output")
-                        }) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_save),
-                                contentDescription = stringResource(R.string.decoder_save)
-                            )
-                        }
+                    }
+
+                    val saveFileName = when (decoded.contentType) {
+                        DecodedContentType.IMAGE -> "decoded_image.png"
+                        DecodedContentType.TEXT -> "decoded_text.txt"
+                        DecodedContentType.BINARY -> "decoded_output"
+                    }
+                    val saveMimeType = when (decoded.contentType) {
+                        DecodedContentType.IMAGE -> "image/png"
+                        DecodedContentType.TEXT -> "text/plain"
+                        DecodedContentType.BINARY -> "application/octet-stream"
+                    }
+
+                    FilledTonalIconButton(onClick = {
+                        saveLauncher.launch(saveFileName)
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_save),
+                            contentDescription = stringResource(R.string.decoder_save)
+                        )
                     }
                 }
             }
@@ -369,11 +417,9 @@ private fun DecodedImagePreview(bytes: ByteArray, modifier: Modifier) {
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
 
     LaunchedEffect(bytes) {
-        withContext(Dispatchers.IO) {
-            bitmap = runCatching {
-                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-            }.getOrNull()
-        }
+        bitmap = runCatching {
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        }.getOrNull()
     }
 
     if (bitmap != null) {
