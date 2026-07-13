@@ -9,6 +9,7 @@ add_library(
         SHARED
         Main.cpp
         encoding/base64.cpp
+        encoding/cpp_converter.cpp
 )
 
 find_library(

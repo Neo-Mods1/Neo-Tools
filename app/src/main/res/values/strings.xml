@@ -87,6 +87,30 @@
     <string name="decoder_load_dialog_title">Load Base64 from…</string>
     <string name="decoder_load_from_file">Text file (.txt)</string>
 
+    <!-- ===== C++ Header Generator strings ===== -->
+    <string name="cpp_gen_title">C++ Header Generator</string>
+    <string name="cpp_gen_subtitle">Convert any file to a C++ header (.hpp) with constexpr byte array — xxd -i compatible.</string>
+    <string name="cpp_gen_input_label">Input File</string>
+    <string name="cpp_gen_no_file">No file selected</string>
+    <string name="cpp_gen_pick_file">Pick file</string>
+    <string name="cpp_gen_generate">Generate Header</string>
+    <string name="cpp_gen_output">Generated Header</string>
+    <string name="cpp_gen_save">Save .hpp File</string>
+    <string name="cpp_gen_saved">Header saved</string>
+    <string name="cpp_gen_save_failed">Could not save header</string>
+
+    <!-- ===== C++ Header Decoder strings ===== -->
+    <string name="cpp_dec_title">C++ Header Decoder</string>
+    <string name="cpp_dec_subtitle">Load a generated .hpp header and extract the original file byte-for-byte.</string>
+    <string name="cpp_dec_header_label">Header File</string>
+    <string name="cpp_dec_no_header">No header loaded</string>
+    <string name="cpp_dec_pick_header">Pick .hpp file</string>
+    <string name="cpp_dec_decode">Decode Header</string>
+    <string name="cpp_dec_result">Decoded File</string>
+    <string name="cpp_dec_save">Save File</string>
+    <string name="cpp_dec_saved">File saved</string>
+    <string name="cpp_dec_save_failed">Could not save file</string>
+
     <string name="ui_scale">UI Scale</string>
     <string name="ui_scale_desc">Adjust the overall size of interface elements</string>
 

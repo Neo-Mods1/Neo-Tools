@@ -28,4 +28,30 @@ object NeoNative {
      * @return the decoded raw bytes.
      */
     external fun decodeBase64(input: String): ByteArray
+
+    /**
+     * Convert raw file bytes to a C++ header (.hpp) string.
+     * Output matches xxd -i format with 16 bytes per line.
+     *
+     * @param data     raw file bytes.
+     * @param filename original file name (e.g. "image.png").
+     * @return the complete .hpp header text.
+     */
+    external fun fileToHeader(data: ByteArray, filename: String): String
+
+    /**
+     * Parse a .hpp header and extract the raw byte data.
+     *
+     * @param header the .hpp header text.
+     * @return the decoded raw bytes.
+     */
+    external fun headerToFile(header: String): ByteArray
+
+    /**
+     * Extract the file name from a .hpp header.
+     *
+     * @param header the .hpp header text.
+     * @return the file_name value from the header.
+     */
+    external fun headerFileName(header: String): String
 }

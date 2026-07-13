@@ -48,7 +48,9 @@ internal class DefaultToolRepository : ToolRepository {
         "xml" to listOf(),
         "encoding" to listOf(
             Tool("enc_base64", "encoding", "Base64 Encoder", "Encode images and files to Base64", R.drawable.ic_cat_binary, "Base64"),
-            Tool("dec_base64", "encoding", "Base64 Decoder", "Decode Base64 back to files and text", R.drawable.ic_cat_binary, "Base64")
+            Tool("dec_base64", "encoding", "Base64 Decoder", "Decode Base64 back to files and text", R.drawable.ic_cat_binary, "Base64"),
+            Tool("enc_cpp_header", "encoding", "C++ Header Generator", "Convert files to C++ header (.hpp)", R.drawable.ic_tool_hex, "C++ Headers"),
+            Tool("dec_cpp_header", "encoding", "C++ Header Decoder", "Extract original file from .hpp header", R.drawable.ic_tool_hex, "C++ Headers")
         )
     )
 

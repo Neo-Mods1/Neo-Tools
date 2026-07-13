@@ -16,6 +16,8 @@ import com.neomods.tools.ui.screens.AllSetScreen
 import com.neomods.tools.ui.screens.Base64DecoderScreen
 import com.neomods.tools.ui.screens.Base64EncoderScreen
 import com.neomods.tools.ui.screens.CategoryScreen
+import com.neomods.tools.ui.screens.CppHeaderDecoderScreen
+import com.neomods.tools.ui.screens.CppHeaderGeneratorScreen
 import com.neomods.tools.ui.screens.CrashOptInScreen
 import com.neomods.tools.ui.screens.HomeScreen
 import com.neomods.tools.ui.screens.about.AboutScreen
@@ -161,6 +163,8 @@ fun NeoNavHost(
             when (toolId) {
                 "enc_base64" -> Base64EncoderScreen(onBack = { navController.popBackStack() })
                 "dec_base64" -> Base64DecoderScreen(onBack = { navController.popBackStack() })
+                "enc_cpp_header" -> CppHeaderGeneratorScreen(onBack = { navController.popBackStack() })
+                "dec_cpp_header" -> CppHeaderDecoderScreen(onBack = { navController.popBackStack() })
                 else -> {
                     val viewModel: ToolViewModel = viewModel(backStack)
                     PlaceholderToolScreen(
