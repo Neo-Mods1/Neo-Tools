@@ -23,5 +23,16 @@ namespace encoding {
  */
 jstring EncodeBase64(JNIEnv* env, jobject thiz, jbyteArray data);
 
+/**
+ * Decode a standard RFC 4648 Base64 string back to raw bytes.
+ * Maps to the Kotlin-side `external fun decodeBase64`.
+ *
+ * @param env   JNI environment.
+ * @param thiz  the `NeoNative` instance (unused; decoder is stateless).
+ * @param input the Base64 text to decode.
+ * @return the decoded bytes as a `jbyteArray`.
+ */
+jbyteArray DecodeBase64(JNIEnv* env, jobject thiz, jstring input);
+
 } // namespace encoding
 } // namespace neotools

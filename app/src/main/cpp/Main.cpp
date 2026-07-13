@@ -28,7 +28,9 @@ namespace {
 int RegisterEncoding(JNIEnv* env) {
     JNINativeMethod methods[] = {
         { OBFUSCATE("encodeBase64"),  OBFUSCATE("([B)Ljava/lang/String;"),
-          reinterpret_cast<void*>(neotools::encoding::EncodeBase64) }
+          reinterpret_cast<void*>(neotools::encoding::EncodeBase64) },
+        { OBFUSCATE("decodeBase64"),  OBFUSCATE("(Ljava/lang/String;)[B"),
+          reinterpret_cast<void*>(neotools::encoding::DecodeBase64) }
     };
 
     jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));

@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import com.neomods.tools.NeoToolsApplication
 import com.neomods.tools.permission.PermissionManager
 import com.neomods.tools.ui.screens.AllSetScreen
+import com.neomods.tools.ui.screens.Base64DecoderScreen
 import com.neomods.tools.ui.screens.Base64EncoderScreen
 import com.neomods.tools.ui.screens.CategoryScreen
 import com.neomods.tools.ui.screens.CrashOptInScreen
@@ -157,14 +158,16 @@ fun NeoNavHost(
             arguments = listOf(navArgument(Screen.Tool.ARG) { type = NavType.StringType })
         ) { backStack ->
             val toolId = backStack.arguments?.getString(Screen.Tool.ARG) ?: ""
-            if (toolId == "enc_base64") {
-                Base64EncoderScreen(onBack = { navController.popBackStack() })
-            } else {
-                val viewModel: ToolViewModel = viewModel(backStack)
-                PlaceholderToolScreen(
-                    onBack = { navController.popBackStack() },
-                    viewModel = viewModel
-                )
+            when (toolId) {
+                "enc_base64" -> Base64EncoderScreen(onBack = { navController.popBackStack() })
+                "dec_base64" -> Base64DecoderScreen(onBack = { navController.popBackStack() })
+                else -> {
+                    val viewModel: ToolViewModel = viewModel(backStack)
+                    PlaceholderToolScreen(
+                        onBack = { navController.popBackStack() },
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }

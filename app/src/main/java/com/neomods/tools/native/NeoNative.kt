@@ -20,4 +20,12 @@ object NeoNative {
      *         tabs), suitable for APIs, JSON and decoding.
      */
     external fun encodeBase64(input: ByteArray): String
+
+    /**
+     * Decode a standard Base64 string back to raw bytes.
+     *
+     * @param input a single continuous line of Base64 text.
+     * @return the decoded raw bytes.
+     */
+    external fun decodeBase64(input: String): ByteArray
 }

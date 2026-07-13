@@ -70,5 +70,73 @@ jstring EncodeBase64(JNIEnv* env, jobject /* thiz */, jbyteArray data) {
     return result;
 }
 
+jbyteArray DecodeBase64(JNIEnv* env, jobject /* thiz */, jstring input) {
+    if (input == nullptr) {
+        return env->NewByteArray(0);
+    }
+
+    const char* inChars = env->GetStringUTFChars(input, nullptr);
+    if (inChars == nullptr) {
+        return env->NewByteArray(0);
+    }
+
+    const size_t inLen = strlen(inChars);
+    if (inLen == 0) {
+        env->ReleaseStringUTFChars(input, inChars);
+        return env->NewByteArray(0);
+    }
+
+    // Build a reverse lookup table for the Base64 alphabet.
+    static int8_t lookup[256];
+    static bool lookupInit = false;
+    if (!lookupInit) {
+        memset(lookup, -1, sizeof(lookup));
+        for (int i = 0; i < 64; i++) {
+            lookup[static_cast<uint8_t>(kBase64Alphabet[i])] = i;
+        }
+        lookupInit = true;
+    }
+
+    // Strip whitespace / newlines and compute decode table.
+    // Worst case: every 4 Base64 chars produce 3 bytes.
+    const size_t maxOut = (inLen / 4) * 3 + 3;
+    uint8_t* out = static_cast<uint8_t*>(malloc(maxOut));
+    if (out == nullptr) {
+        env->ReleaseStringUTFChars(input, inChars);
+        return env->NewByteArray(0);
+    }
+
+    size_t oi = 0;
+    uint32_t accum = 0;
+    int bitsFilled = 0;
+
+    for (size_t i = 0; i < inLen; i++) {
+        const char c = inChars[i];
+        if (c == ' ' || c == '\n' || c == '\r' || c == '\t') continue;
+
+        const int8_t val = lookup[static_cast<uint8_t>(c)];
+        if (val < 0) continue; // skip padding '=' and invalid chars
+
+        accum = (accum << 6) | static_cast<uint32_t>(val);
+        bitsFilled += 6;
+
+        if (bitsFilled >= 8) {
+            bitsFilled -= 8;
+            out[oi++] = static_cast<uint8_t>((accum >> bitsFilled) & 0xFF);
+        }
+    }
+
+    env->ReleaseStringUTFChars(input, inChars);
+
+    jbyteArray result = env->NewByteArray(static_cast<jsize>(oi));
+    if (result != nullptr) {
+        env->SetByteArrayRegion(result, 0, static_cast<jsize>(oi),
+                                reinterpret_cast<jbyte*>(out));
+    }
+
+    free(out);
+    return result;
+}
+
 } // namespace encoding
 } // namespace neotools

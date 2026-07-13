@@ -69,6 +69,24 @@
     <string name="base64_save_failed">Could not save file</string>
     <string name="base64_size">Base64 · %1$s</string>
 
+    <!-- ===== Base64 Decoder strings ===== -->
+    <string name="decoder_title">Base64 Decoder</string>
+    <string name="decoder_subtitle">Paste a Base64 string or load from a .txt file — decode it back to the original.</string>
+    <string name="decoder_input_label">Base64 Input</string>
+    <string name="decoder_input_hint">Paste your Base64 string here…</string>
+    <string name="decoder_load_file">Load from file</string>
+    <string name="decoder_decode">Decode</string>
+    <string name="decoder_result">Decoded Output</string>
+    <string name="decoder_copy">Copy</string>
+    <string name="decoder_save">Save</string>
+    <string name="decoder_saved">File saved</string>
+    <string name="decoder_save_failed">Could not save file</string>
+    <string name="decoder_binary_data">Binary data</string>
+    <string name="decoder_size">Size: %1$s</string>
+    <string name="decoder_image_error">Could not decode as image</string>
+    <string name="decoder_load_dialog_title">Load Base64 from…</string>
+    <string name="decoder_load_from_file">Text file (.txt)</string>
+
     <string name="back">Back</string>
     <string name="settings">Settings</string>
     <string name="about">About</string>
