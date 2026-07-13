@@ -5,6 +5,11 @@
 // The output is a single continuous line (no newlines / spaces / tabs). The
 // heavy lifting lives here in C++; the Kotlin layer only marshals bytes across
 // the JNI boundary (see com.neomods.tools.native.NeoNative).
+//
+// The native method is resolved ONLY through RegisterNatives (see
+// RegisterEncoding). There is deliberately no exported Java_com_... symbol:
+// keeping a single resolution path avoids a duplicate/ambiguous native method
+// that previously crashed on every call.
 // ---------------------------------------------------------------------------
 
 #include "obfuscate.h"
@@ -17,10 +22,13 @@
 static const char kBase64Alphabet[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+// Core encoder. Registered via RegisterNatives under the Kotlin-side method
+// name. NOTE: a non-static Kotlin `external fun` maps to a 3-argument native
+// function (JNIEnv*, jobject thiz, jbyteArray). Getting the arity wrong here
+// corrupts the call frame and crashes natively.
 extern "C" {
 
-// Core encoder. Shared by the exported JNI symbol and the registered method.
-static jstring Base64EncodeImpl(JNIEnv* env, jbyteArray data) {
+static jstring NeoBase64Encode(JNIEnv* env, jobject /* thiz */, jbyteArray data) {
     if (data == nullptr) {
         return env->NewStringUTF("");
     }
@@ -66,17 +74,9 @@ static jstring Base64EncodeImpl(JNIEnv* env, jbyteArray data) {
 
 } // extern "C"
 
-// Exported JNI symbol so the method always resolves even if registration in
-// JNI_OnLoad cannot find the application class loader.
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_com_neomods_tools_native_NeoNative_encodeBase64(JNIEnv* env, jobject /* thiz */, jbyteArray data) {
-    return Base64EncodeImpl(env, data);
-}
-
 int RegisterEncoding(JNIEnv* env) {
     JNINativeMethod methods[] = {
-        { OBFUSCATE("encodeBase64"),  OBFUSCATE("([B)Ljava/lang/String;"), reinterpret_cast<void*>(Base64EncodeImpl) }
+        { OBFUSCATE("encodeBase64"),  OBFUSCATE("([B)Ljava/lang/String;"), reinterpret_cast<void*>(NeoBase64Encode) }
     };
 
     jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));

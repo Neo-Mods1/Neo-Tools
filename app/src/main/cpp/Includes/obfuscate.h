@@ -11,8 +11,8 @@ Pass string literals into the AY_OBFUSCATE macro to obfuscate them at compile
 time. AY_OBFUSCATE returns a reference to an ay::obfuscated_data object with the
 following traits:
   - Guaranteed obfuscation of string
-  The passed string is encrypted with a simple XOR cipher at compile-time to
-  prevent it being viewable in the binary image
+  The passed string is encrypted with an evolving xorshift64* keystream XOR
+  cipher at compile-time to prevent it being viewable in the binary image
   - Global lifetime
   The actual instantiation of the ay::obfuscated_data takes place inside a
   lambda as a function level static
@@ -56,12 +56,28 @@ namespace ay
     }
 
     // Obfuscates or deobfuscates data with key
+    //
+    // The master key alone is weak: a single 8-byte XOR is trivially reversible
+    // from the binary. We therefore derive a *per-byte, evolving* keystream with
+    // a xorshift64* mixer. Only then do we apply a pure XOR to the data, which
+    // keeps the transform an involution (encrypt == decrypt) so the same
+    // routine works at compile time and at runtime.
     constexpr void cipher(char* data, size_type size, key_type key)
     {
-        // Obfuscate with a simple XOR cipher based on key
+        key_type ks = key;
         for (size_type i = 0; i < size; i++)
         {
-            data[i] ^= char(key >> ((i % 8) * 8));
+            // xorshift64* — spreads entropy so the keystream is not a repetition
+            // of the 8 master-key bytes.
+            ks ^= ks >> 12;
+            ks ^= ks << 25;
+            ks ^= ks >> 27;
+            ks *= 0x2545F4914F6CDD1DULL;
+
+            const char kb = char(
+                (ks >> ((i % 8) * 8)) ^ (ks & 0xFF) ^ (i & 0xFF)
+            );
+            data[i] ^= kb;
         }
     }
 

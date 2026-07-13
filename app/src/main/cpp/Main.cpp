@@ -26,9 +26,9 @@ JNI_OnLoad(JavaVM* vm, void* /* reserved */) {
         return JNI_ERR;
     }
 
-    // Registration is best-effort: the exported Java_com_neomods_tools_native_*
-    // symbols let the JVM resolve the methods dynamically even if
-    // RegisterNatives cannot reach the application class loader from here.
+    // Registration is the ONLY resolution path (no exported Java_com_...
+    // symbols). If this fails the method simply won't link instead of crashing
+    // with a duplicate/ambiguous native method.
     if (RegisterEncoding(env) != JNI_OK) {
         __android_log_print(ANDROID_LOG_WARN, LOG_TAG,
             "Encoding native registration skipped; using dynamic linkage");
