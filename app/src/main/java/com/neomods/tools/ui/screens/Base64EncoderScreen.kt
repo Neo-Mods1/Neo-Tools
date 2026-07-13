@@ -498,7 +498,7 @@ private fun defaultSaveName(name: String): String {
  * Version-independent contract for picking one or many documents (images or
  * any file). Uses [Intent.ACTION_OPEN_DOCUMENT] with [Intent.EXTRA_ALLOW_MULTIPLE]
  * so it works across all supported Android versions and surfaces the system
- * photo picker for `image/*` on Android 13+.
+ * photo picker for the "image" MIME type wildcard on Android 13+.
  */
 private class OpenMultipleDocuments(
     private val mimeTypes: Array<String>
