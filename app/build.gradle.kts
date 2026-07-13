@@ -16,13 +16,13 @@ val hasKeystore = keystorePropertiesFile.exists()
 
 android {
     namespace = "com.neomods.tools"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     defaultConfig {
         applicationId = "com.neomods.tools"
         minSdk = 30
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
 
@@ -35,11 +35,6 @@ android {
                 // Default C++ standard flags; per-target flags live in CMakeLists.txt.
                 cppFlags += "-std=c++17"
             }
-        }
-
-        ndk {
-            // Default (used as fallback): all supported ABIs.
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
         }
     }
     
@@ -67,10 +62,6 @@ android {
             if (hasKeystore) {
                 signingConfig = signingConfigs.getByName("appSigning")
             }
-            ndk {
-                // Debug builds: arm64-v8a only (fast, smaller APK).
-                abiFilters += listOf("arm64-v8a")
-            }
         }
         release {
             isMinifyEnabled = true
@@ -81,10 +72,6 @@ android {
             )
             if (hasKeystore) {
                 signingConfig = signingConfigs.getByName("appSigning")
-            }
-            ndk {
-                // Release builds: all supported ABIs.
-                abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
             }
         }
     }
@@ -114,6 +101,26 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+}
+
+// Configure ABI per build variant
+androidComponents {
+    beforeVariants { variant ->
+        if (variant.buildType == "debug") {
+            variant.enable = true
+        }
+    }
+
+    onVariants { variant ->
+        val abiFilters =
+            if (variant.buildType == "debug") {
+                setOf("arm64-v8a")
+            } else {
+                setOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+            }
+
+        variant.ndk.abiFilters.set(abiFilters)
     }
 }
 
