@@ -14,10 +14,17 @@ if (keystorePropertiesFile.exists()) {
 
 val hasKeystore = keystorePropertiesFile.exists()
 
+val abiList =
+    if (gradle.startParameter.taskNames.any { it.contains("Release", true) }) {
+        listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+    } else {
+        listOf("arm64-v8a")
+    }
+
 android {
     namespace = "com.neomods.tools"
     compileSdk = 36
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "23.1.7779620"
 
     defaultConfig {
         applicationId = "com.neomods.tools"
@@ -28,6 +35,10 @@ android {
 
         vectorDrawables {
             useSupportLibrary = false
+        }
+
+        ndk {
+            abiFilters += abiList
         }
 
         externalNativeBuild {
@@ -101,26 +112,6 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-    }
-}
-
-// Configure ABI per build variant
-androidComponents {
-    beforeVariants { variant ->
-        if (variant.buildType == "debug") {
-            variant.enable = true
-        }
-    }
-
-    onVariants { variant ->
-        val abiFilters =
-            if (variant.buildType == "debug") {
-                setOf("arm64-v8a")
-            } else {
-                setOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-            }
-
-        variant.ndk.abiFilters.set(abiFilters)
     }
 }
 
