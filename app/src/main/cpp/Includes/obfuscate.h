@@ -235,7 +235,7 @@ namespace ay
 // functions for decrypting the string and is also implicitly convertable to a
 // char*
 #define OBFUSCATE_KEY(data, key) \
-	[]() -> ay::obfuscated_data<sizeof(data)/sizeof(data[0]), key_type>& { \
+	[]() -> auto& { \
 		static_assert(sizeof(decltype(key)) == sizeof(ay::key_type), "key must be a 64 bit unsigned integer"); \
 		static_assert((key) >= (1ull << 56), "key must span all 8 bytes"); \
 		constexpr auto n = sizeof(data)/sizeof(data[0]); \
