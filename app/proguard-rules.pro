@@ -5,6 +5,12 @@
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
 
+# OkHttp / OkIO (pulled transitively by Lottie)
+-dontwarn javax.annotation.**
+-dontwarn org.conscrypt.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.openjsse.**
+
 # Compose
 -dontwarn org.jetbrains.annotations.**
 -keep class androidx.compose.** { *; }
