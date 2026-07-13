@@ -6,7 +6,7 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Release APKs
+    - name: Build Release APKs (all ABIs)
       id: build
       continue-on-error: true
       run: |
@@ -68,49 +68,68 @@ jobs:
           echo "success=false" >> $GITHUB_OUTPUT
         fi
 
-    - name: Upload APK artifacts
-      if: steps.check.outputs.success == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: Neo-Tools-release
-        path: app/build/outputs/apk/release/*.apk
-        retention-days: 7
-
-    - name: Send each APK to Telegram
-      if: steps.check.outputs.success == 'true'
-      env:
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      run: |
-        BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-        COMMIT_MSG=$(echo "${{ github.event.head_commit.message || github.event.pull_request.title || 'N/A' }}" | head -1)
-
-        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-          -d chat_id="${TELEGRAM_CHAT_ID}" \
-          -d text="✅ NEO TOOLS RELEASE BUILD SUCCESSFUL%0ATime: ${BUILD_TIME}%0ACommit: ${COMMIT_MSG}%0A%0ASending APKs..."
-
-        for APK in app/build/outputs/apk/release/*.apk; do
-          APK_NAME=$(basename "$APK")
-          APK_SIZE=$(du -h "$APK" | cut -f1)
-          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
-            -F chat_id="${TELEGRAM_CHAT_ID}" \
-            -F document=@"${APK}" \
-            -F caption="${APK_NAME} (${APK_SIZE})"
-        done
-
-    - name: Send failure to Telegram
+    - name: Release failed -> send log + error to admin only
       if: steps.check.outputs.success == 'false'
       env:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       run: |
-        COMMIT_MSG=$(echo "${{ github.event.head_commit.message || github.event.pull_request.title || 'N/A' }}" | head -1)
+        COMMIT_MSG=$(git log -1 --pretty=%s)
 
         curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
           -d chat_id="${TELEGRAM_CHAT_ID}" \
-          -d text="❌ NEO TOOLS RELEASE FAILED%0ACommit: ${COMMIT_MSG}%0ALogs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          -d text="❌ NEO TOOLS RELEASE FAILED%0ACommit: ${COMMIT_MSG}"
 
         curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
           -F chat_id="${TELEGRAM_CHAT_ID}" \
           -F document=@build_output.log \
           -F caption="Build log"
+
+    - name: Release succeeded -> send to admin, then broadcast to all chats
+      if: steps.check.outputs.success == 'true'
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_BROADCAST_CHAT_IDS: ${{ secrets.TELEGRAM_BROADCAST_CHAT_IDS }}
+      run: |
+        BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+        COMMIT_MSG=$(git log -1 --pretty=%s)
+
+        # 1. Send the release to the admin ("me") first.
+        for APK in app/build/outputs/apk/release/*.apk; do
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+            -F chat_id="${TELEGRAM_CHAT_ID}" \
+            -F document=@"${APK}" \
+            -F caption="Neo Tools Release - $(basename "${APK}")"
+        done
+
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+          -d chat_id="${TELEGRAM_CHAT_ID}" \
+          -d text="✅ NEO TOOLS RELEASE BUILD READY%0ATime: ${BUILD_TIME}%0ACommit: ${COMMIT_MSG}%0A%0ABroadcasting to all chats..."
+
+        # 2. Discover every chat the bot has talked to via the Telegram API.
+        #    (getUpdates enumerates recent chats; optional explicit list is appended.)
+        CHATS=""
+        if [ -n "${TELEGRAM_BROADCAST_CHAT_IDS}" ]; then
+          CHATS="${TELEGRAM_BROADCAST_CHAT_IDS}"
+        fi
+        DISCOVERED=$(curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?limit=100" \
+          | jq -r '.result[].message.chat.id' 2>/dev/null | sort -u)
+        for c in ${DISCOVERED}; do
+          case " ${CHATS} " in
+            *" ${c} "*) ;;
+            *) CHATS="${CHATS} ${c}" ;;
+          esac
+        done
+
+        # 3. Forward the release to every other chat ("What's new: <commit>").
+        for c in ${CHATS}; do
+          [ -z "${c}" ] && continue
+          [ "${c}" = "${TELEGRAM_CHAT_ID}" ] && continue
+          for APK in app/build/outputs/apk/release/*.apk; do
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+              -F chat_id="${c}" \
+              -F document=@"${APK}" \
+              -F caption="What's new: ${COMMIT_MSG}"
+          done
+        done

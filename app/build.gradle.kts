@@ -38,8 +38,8 @@ android {
         }
 
         ndk {
-            // Only the ABIs we care about: keeps the APK small and the build fast.
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+            // Default (used as fallback): all supported ABIs.
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
         }
     }
     
@@ -67,6 +67,10 @@ android {
             if (hasKeystore) {
                 signingConfig = signingConfigs.getByName("appSigning")
             }
+            ndk {
+                // Debug builds: arm64-v8a only (fast, smaller APK).
+                abiFilters += listOf("arm64-v8a")
+            }
         }
         release {
             isMinifyEnabled = true
@@ -77,6 +81,10 @@ android {
             )
             if (hasKeystore) {
                 signingConfig = signingConfigs.getByName("appSigning")
+            }
+            ndk {
+                // Release builds: all supported ABIs.
+                abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
             }
         }
     }
