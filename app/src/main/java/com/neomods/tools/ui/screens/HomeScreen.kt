@@ -67,12 +67,36 @@ fun HomeScreen(
                 }
             )
         }
-    ) { padding ->
+        ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            // Hero header
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = NeoDimens.ScreenPadding,
+                        end = NeoDimens.ScreenPadding,
+                        top = NeoDimens.SectionSpacing,
+                        bottom = 4.dp
+                    )
+            ) {
+                Text(
+                    text = stringResource(R.string.home_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = stringResource(R.string.home_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+
             NeoSearchBar(
                 value = query,
                 onValueChange = { query = it },

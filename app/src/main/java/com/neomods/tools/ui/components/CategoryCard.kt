@@ -2,6 +2,7 @@ package com.neomods.tools.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,41 +26,69 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.neomods.tools.R
 import com.neomods.tools.model.Category
 import com.neomods.tools.model.Tool
 import com.neomods.tools.ui.theme.NeoDimens
 
 /**
+ * Picks a stable, theme-aware accent (container + on-color) for a given key so
+ * category/tool icons get a little variety while still following the active
+ * Material You / dynamic colour scheme.
+ */
+@Composable
+private fun accentFor(key: String): Pair<Color, Color> {
+    val scheme = MaterialTheme.colorScheme
+    val accents = listOf(
+        scheme.primaryContainer to scheme.onPrimaryContainer,
+        scheme.secondaryContainer to scheme.onSecondaryContainer,
+        scheme.tertiaryContainer to scheme.onTertiaryContainer
+    )
+    val index = kotlin.math.abs(key.hashCode()) % accents.size
+    return accents[index]
+}
+
+/**
  * Large lead icon used across the premium "toolbox" cards.
  *
- * Rendered in the drawable's own colours (no forced accent tint) so the
- * multicolour category/tool icons keep their native look. White monochrome
- * (XML) icons are expected to be swapped for coloured PNGs over time.
+ * Rendered inside a theme-coloured rounded chip and tinted with the matching
+ * on-colour, so every icon follows the active Material You / dynamic colour
+ * scheme instead of a fixed colour. The drawable is tinted (SrcIn) so both
+ * monochrome XML assets and coloured PNGs resolve to the same on-brand glyph.
  */
 @Composable
 fun LeadIcon(
     iconRes: Int,
     contentDescription: String,
     modifier: Modifier = Modifier,
-    size: androidx.compose.ui.unit.Dp = NeoDimens.LeadIconSize,
-    tint: Color = Color.Unspecified
+    size: Dp = NeoDimens.LeadIconSize,
+    tint: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer
 ) {
-    Icon(
-        painter = painterResource(iconRes),
-        contentDescription = contentDescription,
-        tint = tint,
-        modifier = modifier.size(size)
-    )
+    Surface(
+        modifier = modifier.size(size + 22.dp),
+        shape = MaterialTheme.shapes.medium,
+        color = containerColor,
+        tonalElevation = NeoDimens.CardElevation
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                painter = painterResource(iconRes),
+                contentDescription = contentDescription,
+                tint = tint,
+                modifier = Modifier.size(size)
+            )
+        }
+    }
 }
 
 /**
  * Grid cell representing a category on the Home screen.
  *
- * Designed to feel like a premium toolbox card: a large lead icon floating
- * above a bold title, a short "what's inside" tag line, and a tool-count footer
- * with a navigation chevron. Tapping it opens the category screen.
+ * Premium toolbox card: a theme-coloured icon chip floats above a bold title,
+ * a short "what's inside" tag line, and a tool-count footer with a navigation
+ * chevron. Tapping it opens the category screen.
  */
 @Composable
 fun CategoryCard(
@@ -71,6 +102,7 @@ fun CategoryCard(
         toolCount,
         toolCount
     )
+    val (container, onContainer) = accentFor(category.id)
 
     Card(
         modifier = modifier
@@ -78,7 +110,7 @@ fun CategoryCard(
             .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = NeoDimens.CardElevation)
@@ -91,7 +123,9 @@ fun CategoryCard(
             LeadIcon(
                 iconRes = category.iconRes,
                 contentDescription = category.title,
-                size = NeoDimens.LeadIconSizeLarge
+                size = NeoDimens.LeadIconSizeLarge,
+                containerColor = container,
+                tint = onContainer
             )
 
             Spacer(Modifier.height(14.dp))
@@ -137,9 +171,9 @@ fun CategoryCard(
 /**
  * Grid cell representing a tool inside a category screen.
  *
- * Mirrors [CategoryCard] visually but without the tool-count footer: a large
- * lead icon floats above a bold title (with a chevron) and a short description.
- * A tool is a leaf in the navigation graph (it opens the placeholder screen).
+ * Mirrors [CategoryCard] visually but without the tool-count footer: a
+ * theme-coloured icon chip floats above a bold title (with a chevron) and a
+ * short description. A tool is a leaf in the navigation graph.
  */
 @Composable
 fun ToolCard(
@@ -147,13 +181,15 @@ fun ToolCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val (container, onContainer) = accentFor(tool.id)
+
     Card(
         modifier = modifier
             .clip(MaterialTheme.shapes.large)
             .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = NeoDimens.CardElevation)
@@ -166,7 +202,9 @@ fun ToolCard(
             LeadIcon(
                 iconRes = tool.iconRes,
                 contentDescription = tool.title,
-                size = NeoDimens.LeadIconSize
+                size = NeoDimens.LeadIconSize,
+                containerColor = container,
+                tint = onContainer
             )
 
             Spacer(Modifier.height(12.dp))

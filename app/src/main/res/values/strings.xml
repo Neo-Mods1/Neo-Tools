@@ -9,6 +9,7 @@
     <string name="back_content_description">Back</string>
     <string name="next_content_description">Open</string>
 
+    <string name="home_subtitle">Your reverse-engineering toolbox</string>
     <string name="home_section_categories">Categories</string>
     <string name="home_section_tools">Tools</string>
 

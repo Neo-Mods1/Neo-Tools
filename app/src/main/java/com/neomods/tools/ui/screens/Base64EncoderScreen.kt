@@ -58,7 +58,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -77,7 +76,7 @@ import com.neomods.tools.encoding.Base64Entry
 import com.neomods.tools.encoding.SelectedFile
 import com.neomods.tools.ui.components.NeoTopBar
 import com.neomods.tools.ui.theme.NeoDimens
-import com.neomods.tools.ui.theme.NeoGradients
+
 
 /**
  * Fully functional Base64 Encoder tool.
@@ -157,12 +156,19 @@ fun Base64EncoderScreen(onBack: () -> Unit) {
 
             SelectedPreview(selected = selected, onRemove = vm::removeFile)
 
-            // Hero "Select Files" button with the brand gradient.
+            // Hero "Select Files" button with a dynamic theme gradient.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(NeoGradients.Primary)
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.tertiary
+                            )
+                        )
+                    )
                     .clickable { showPickerDialog = true }
                     .padding(vertical = 15.dp),
                 contentAlignment = Alignment.Center
@@ -171,13 +177,13 @@ fun Base64EncoderScreen(onBack: () -> Unit) {
                     Icon(
                         painter = painterResource(R.drawable.ic_image),
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(NeoDimens.IconSize)
                     )
                     Spacer(Modifier.width(10.dp))
                     Text(
                         text = stringResource(R.string.base64_select_files),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
