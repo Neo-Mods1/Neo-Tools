@@ -38,21 +38,44 @@ namespace ay
     using size_type = unsigned long long;
     using key_type = unsigned long long;
 
-    // Generate a psuedo-random key that spans all 8 bytes
+    // Generate a psuedo-random key that spans all 8 bytes.
+    // Strengthened vs. the original: the seed (typically __LINE__) is first
+    // mixed with a large constant salt and put through several extra avalanche
+    // rounds so that OBFUSCATE calls on nearby source lines no longer produce
+    // trivially related keys (the old version only differed by the line
+    // number, which an attacker could enumerate).
     constexpr key_type generate_key(key_type seed)
     {
-        // Use the MurmurHash3 64-bit finalizer to hash our seed
-        key_type key = seed;
+        key_type key = seed ^ 0x243F6A8885A308D3ULL; // pi-based salt
         key ^= (key >> 33);
         key *= 0xff51afd7ed558ccd;
         key ^= (key >> 33);
         key *= 0xc4ceb9fe1a85ec53;
         key ^= (key >> 33);
+        key ^= (key << 13);
+        key *= 0x2545F4914F6CDD1DULL;
+        key ^= (key >> 29);
 
-        // Make sure that a bit in each byte is set
+        // Make sure that a bit in each byte is set (and the top byte is
+        // non-zero so the AY_OBFUSCATE_KEY static_assert holds).
         key |= 0x0101010101010101ull;
 
         return key;
+    }
+
+    // Compile-time FNV-1a 64-bit hash of a string literal. Used to bind each
+    // obfuscated string's key to its own content, so two strings on the same
+    // line still get different keys and the key cannot be derived just from the
+    // source location.
+    constexpr key_type hash_string(const char* data, size_type n)
+    {
+        key_type h = 14695981039346656037ULL; // FNV offset basis
+        for (size_type i = 0; i < n; i++)
+        {
+            h ^= static_cast<key_type>(static_cast<unsigned char>(data[i]));
+            h *= 1099511628211ULL; // FNV prime
+        }
+        return h;
     }
 
     // Obfuscates or deobfuscates data with key
@@ -212,12 +235,13 @@ namespace ay
 // functions for decrypting the string and is also implicitly convertable to a
 // char*
 #define OBFUSCATE_KEY(data, key) \
-	[]() -> ay::obfuscated_data<sizeof(data)/sizeof(data[0]), key>& { \
+	[]() -> ay::obfuscated_data<sizeof(data)/sizeof(data[0]), key_type>& { \
 		static_assert(sizeof(decltype(key)) == sizeof(ay::key_type), "key must be a 64 bit unsigned integer"); \
 		static_assert((key) >= (1ull << 56), "key must span all 8 bytes"); \
 		constexpr auto n = sizeof(data)/sizeof(data[0]); \
-		constexpr auto obfuscator = ay::make_obfuscator<n, key>(data); \
-		static auto obfuscated_data = ay::obfuscated_data<n, key>(obfuscator); \
+		constexpr auto str_key = (ay::generate_key(key) ^ ay::hash_string(data, n)) | 0x0100000000000000ULL; \
+		constexpr auto obfuscator = ay::make_obfuscator<n, str_key>(data); \
+		static auto obfuscated_data = ay::obfuscated_data<n, str_key>(obfuscator); \
 		return obfuscated_data; \
 	}()
 
