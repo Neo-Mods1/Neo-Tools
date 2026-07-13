@@ -4,7 +4,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContract
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -101,12 +104,12 @@ fun Base64EncoderScreen(onBack: () -> Unit) {
     var pendingSave by remember { mutableStateOf<Base64Entry?>(null) }
 
     val pickImages = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickMultipleVisualMedia()
+        OpenMultipleDocuments(arrayOf("image/*"))
     ) { uris -> vm.addFiles(uris) }
 
     val pickFiles = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentMultiple()
-    ) { uris -> vm.addFiles(uris ?: emptyList()) }
+        OpenMultipleDocuments(arrayOf("*/*"))
+    ) { uris -> vm.addFiles(uris) }
 
     val saveLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain")
@@ -198,13 +201,11 @@ fun Base64EncoderScreen(onBack: () -> Unit) {
             onDismiss = { showPickerDialog = false },
             onImage = {
                 showPickerDialog = false
-                pickImages.launch(
-                    ActivityResultContracts.PickMultipleVisualMedia.Request(maxItems = 50)
-                )
+                pickImages.launch(Unit)
             },
             onFile = {
                 showPickerDialog = false
-                pickFiles.launch(arrayOf("*/*"))
+                pickFiles.launch(Unit)
             }
         )
     }
@@ -497,5 +498,43 @@ private fun formatSize(bytes: Long): String {
 
 private fun defaultSaveName(name: String): String {
     val base = name.substringBeforeLast('.')
-    return if (base.isEmpty()) "base64" else "$base_base64.txt"
+    return if (base.isEmpty()) "base64" else "${base}_base64.txt"
+}
+
+/**
+ * Version-independent contract for picking one or many documents (images or
+ * any file). Uses [Intent.ACTION_OPEN_DOCUMENT] with [Intent.EXTRA_ALLOW_MULTIPLE]
+ * so it works across all supported Android versions and surfaces the system
+ * photo picker for `image/*` on Android 13+.
+ */
+private class OpenMultipleDocuments(
+    private val mimeTypes: Array<String>
+) : ActivityResultContract<Unit, List<Uri>>() {
+
+    override fun createIntent(context: Context, input: Unit): Intent {
+        return Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            if (mimeTypes.size == 1) {
+                type = mimeTypes[0]
+            } else {
+                type = "*/*"
+                putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+            }
+        }
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): List<Uri> {
+        if (resultCode != Activity.RESULT_OK || intent == null) return emptyList()
+        val clip = intent.clipData
+        if (clip != null && clip.itemCount > 0) {
+            val out = mutableListOf<Uri>()
+            for (i in 0 until clip.itemCount) {
+                clip.getItemAt(i).uri?.let { out.add(it) }
+            }
+            return out
+        }
+        val single = intent.data
+        return if (single != null) listOf(single) else emptyList()
+    }
 }
