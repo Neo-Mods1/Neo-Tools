@@ -8,14 +8,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Density
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.neomods.tools.navigation.NeoNavHost
@@ -47,31 +48,40 @@ private fun AppContent() {
         else -> isSystemInDarkTheme()
     }
 
-    LaunchedEffect(uiScale) {
-        settings.applyUiScale(context, uiScale)
+    val baseDensity = LocalDensity.current
+
+    val scaledDensity = remember(uiScale, baseDensity) {
+        Density(
+            density = baseDensity.density * uiScale,
+            fontScale = baseDensity.fontScale * uiScale
+        )
     }
 
-    NeoToolsTheme(darkTheme = darkTheme, dynamicColor = dynamicColors) {
-        val view = LocalView.current
-        val surfaceColor = MaterialTheme.colorScheme.surface
-        if (!view.isInEditMode) {
-            SideEffect {
-                val window = (view.context as ComponentActivity).window
-                window.statusBarColor = surfaceColor.toArgb()
-                window.navigationBarColor = surfaceColor.toArgb()
-                WindowCompat.getInsetsController(window, view)
-                    .isAppearanceLightStatusBars = !darkTheme
-                WindowCompat.getInsetsController(window, view)
-                    .isAppearanceLightNavigationBars = !darkTheme
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalDensity provides scaledDensity
+    ) {
+        NeoToolsTheme(darkTheme = darkTheme, dynamicColor = dynamicColors) {
+            val view = LocalView.current
+            val surfaceColor = MaterialTheme.colorScheme.surface
+            if (!view.isInEditMode) {
+                SideEffect {
+                    val window = (view.context as ComponentActivity).window
+                    window.statusBarColor = surfaceColor.toArgb()
+                    window.navigationBarColor = surfaceColor.toArgb()
+                    WindowCompat.getInsetsController(window, view)
+                        .isAppearanceLightStatusBars = !darkTheme
+                    WindowCompat.getInsetsController(window, view)
+                        .isAppearanceLightNavigationBars = !darkTheme
+                }
             }
-        }
 
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.surface
-        ) {
-            val navController = rememberNavController()
-            NeoNavHost(navController = navController, modifier = Modifier.fillMaxSize())
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                val navController = rememberNavController()
+                NeoNavHost(navController = navController, modifier = Modifier.fillMaxSize())
+            }
         }
     }
 }

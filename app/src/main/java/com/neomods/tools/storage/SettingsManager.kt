@@ -1,7 +1,6 @@
 package com.neomods.tools.storage
 
 import android.content.Context
-import android.content.res.Configuration
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -77,14 +76,5 @@ class SettingsManager(private val context: Context) {
         dataStore.edit { preferences ->
             preferences[UI_SCALE] = scale.coerceIn(0.75f, 1.5f)
         }
-    }
-
-    fun applyUiScale(context: Context, scale: Float) {
-        val config = Configuration(context.resources.configuration)
-        val baseDensity = context.resources.displayMetrics.densityDpi
-        config.fontScale = scale
-        @Suppress("DEPRECATION")
-        config.densityDpi = (baseDensity * scale).toInt()
-        context.resources.updateConfiguration(config, context.resources.displayMetrics)
     }
 }

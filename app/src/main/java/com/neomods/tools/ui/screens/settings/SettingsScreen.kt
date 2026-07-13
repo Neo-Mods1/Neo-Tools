@@ -185,7 +185,6 @@ fun SettingsScreen(
                                 onValueChange = { newScale ->
                                     scope.launch {
                                         settingsManager.setUiScale(newScale)
-                                        settingsManager.applyUiScale(context, newScale)
                                     }
                                 },
                                 valueRange = 0.75f..1.5f,
