@@ -80,6 +80,15 @@ class CrashHandler(private val context: Context) : Thread.UncaughtExceptionHandl
 
             val stacktrace = sw.toString()
 
+            CrashReporter.reportCrash(
+                context,
+                throwable.javaClass.name,
+                throwable.message ?: "No message",
+                stacktrace,
+                thread.name,
+                crashLog.toString()
+            )
+
             val intent = Intent(context, CrashActivity::class.java).apply {
                 putExtra(CrashActivity.EXTRA_CRASH_LOG, crashLog.toString())
                 putExtra(CrashActivity.EXTRA_CRASH_MESSAGE, throwable.message ?: "Unknown error")

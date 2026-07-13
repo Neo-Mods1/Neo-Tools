@@ -146,7 +146,13 @@ class Base64EncoderViewModel(application: Application) : AndroidViewModel(applic
     fun copyBase64(entry: Base64Entry) {
         val cm = getApplication<Application>()
             .getSystemService(ClipboardManager::class.java)
-        cm.setPrimaryClip(ClipData.newPlainText(entry.name, entry.base64))
+        val text = entry.base64
+        val maxClipboardBytes = 512 * 1024 // ~512KB safe limit for Binder transactions
+        if (text.toByteArray(Charsets.UTF_8).size > maxClipboardBytes) {
+            notify("Base64 too large to copy to clipboard (${text.length} chars)")
+            return
+        }
+        cm.setPrimaryClip(ClipData.newPlainText(entry.name, text))
         notify("Base64 copied to clipboard")
     }
 

@@ -110,6 +110,11 @@ class Base64DecoderViewModel(application: Application) : AndroidViewModel(applic
     fun copyDecoded() {
         val r = _result.value ?: return
         val text = r.text ?: r.bytes.toString(Charsets.ISO_8859_1)
+        val maxClipboardBytes = 512 * 1024 // ~512KB safe limit for Binder transactions
+        if (text.toByteArray(Charsets.UTF_8).size > maxClipboardBytes) {
+            notify("Content too large to copy to clipboard")
+            return
+        }
         val cm = getApplication<Application>()
             .getSystemService(ClipboardManager::class.java)
         cm.setPrimaryClip(ClipData.newPlainText("decoded", text))
