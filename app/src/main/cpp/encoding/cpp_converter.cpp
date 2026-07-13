@@ -10,8 +10,7 @@
 // The decoder parses a previously generated .hpp header and reconstructs
 // the original binary file byte-for-byte.
 //
-// The native method is resolved ONLY through RegisterNatives (see Main.cpp),
-// so there is deliberately no exported Java_com_... symbol.
+// Optimized for speed: uses preallocated buffers, avoids per-byte allocations.
 // ---------------------------------------------------------------------------
 
 #include "obfuscate.h"
@@ -29,7 +28,8 @@
 namespace neotools {
 namespace encoding {
 
-// --- Generator: bytes -> .hpp header ---
+// Fast hex lookup table
+static const char kHexDigits[] = "0123456789abcdef";
 
 jstring FileToHeader(JNIEnv* env, jobject /* thiz */, jbyteArray data, jstring filename) {
     if (data == nullptr) {
@@ -51,8 +51,9 @@ jstring FileToHeader(JNIEnv* env, jobject /* thiz */, jbyteArray data, jstring f
         fname = env->GetStringUTFChars(filename, nullptr);
     }
 
-    // Sanitize filename for C++ identifier: replace non-alnum with '_'
+    // Sanitize filename for C++ identifier
     std::string safeName;
+    safeName.reserve(64);
     if (fname != nullptr && fname[0] != '\0') {
         for (const char* p = fname; *p; ++p) {
             char c = *p;
@@ -66,45 +67,49 @@ jstring FileToHeader(JNIEnv* env, jobject /* thiz */, jbyteArray data, jstring f
         safeName = "file";
     }
 
-    // Build the header string piece by piece to avoid huge allocations.
+    const size_t total = static_cast<size_t>(len);
+
+    // Pre-calculate output size to avoid reallocations
+    // Header overhead ~200 bytes, each byte ~6 chars ("0xXX, "), 16 per line + newline
+    size_t estimatedSize = 256 + (total * 6) + (total / 16 * 2) + 128;
     std::string hpp;
-    hpp.reserve(static_cast<size_t>(len) * 5 + 512);
+    hpp.reserve(estimatedSize);
 
-    hpp += "#pragma once\n";
-    hpp += "#include <cstdint>\n";
-    hpp += "#include <cstddef>\n\n";
-
-    // constexpr unsigned char <name>_data[] = {
+    hpp += "#pragma once\n#include <cstdint>\n#include <cstddef>\n\n";
     hpp += "inline constexpr unsigned char ";
     hpp += safeName;
     hpp += "_data[] = {\n";
 
-    const size_t total = static_cast<size_t>(len);
+    // Hex lookup for fast conversion
+    char lineBuf[128]; // 16 bytes * 7 chars + null = enough
+
     for (size_t i = 0; i < total; i += 16) {
-        hpp += "    ";
+        size_t lineLen = 0;
         const size_t lineEnd = std::min(i + 16, total);
+
         for (size_t j = i; j < lineEnd; ++j) {
-            char buf[8];
-            snprintf(buf, sizeof(buf), "0x%02x",
-                     static_cast<uint8_t>(bytes[j]));
-            hpp += buf;
-            if (j + 1 < lineEnd) {
-                hpp += ", ";
-            }
+            uint8_t b = static_cast<uint8_t>(bytes[j]);
+            lineBuf[lineLen++] = '0';
+            lineBuf[lineLen++] = 'x';
+            lineBuf[lineLen++] = kHexDigits[b >> 4];
+            lineBuf[lineLen++] = kHexDigits[b & 0x0F];
+            lineBuf[lineLen++] = ',';
+            lineBuf[lineLen++] = ' ';
         }
-        hpp += ",\n";
+        // Remove trailing ", " from last byte on line
+        if (lineLen >= 2) lineLen -= 2;
+        lineBuf[lineLen++] = ',';
+        lineBuf[lineLen++] = '\n';
+
+        hpp.append(lineBuf, lineLen);
     }
 
     hpp += "};\n\n";
-
-    // <name>_size
     hpp += "inline constexpr std::size_t ";
     hpp += safeName;
     hpp += "_size = ";
     hpp += std::to_string(total);
     hpp += ";\n\n";
-
-    // <name>_name
     hpp += "inline constexpr const char ";
     hpp += safeName;
     hpp += "_name[] = \"";
@@ -117,49 +122,10 @@ jstring FileToHeader(JNIEnv* env, jobject /* thiz */, jbyteArray data, jstring f
 
     env->ReleaseByteArrayElements(data, bytes, JNI_ABORT);
 
-    jstring result = env->NewStringUTF(hpp.c_str());
-    return result;
+    return env->NewStringUTF(hpp.c_str());
 }
 
-// --- Helpers for Decoder ---
-
-static bool iequals(const std::string& a, const std::string& b) {
-    if (a.size() != b.size()) return false;
-    for (size_t i = 0; i < a.size(); ++i) {
-        if (std::tolower(static_cast<unsigned char>(a[i])) !=
-            std::tolower(static_cast<unsigned char>(b[i]))) return false;
-    }
-    return true;
-}
-
-static std::string trim(const std::string& s) {
-    size_t start = s.find_first_not_of(" \t\r\n");
-    if (start == std::string::npos) return "";
-    size_t end = s.find_last_not_of(" \t\r\n");
-    return s.substr(start, end - start + 1);
-}
-
-// Parse "0xHH" or "0xHH," to a byte value. Returns -1 on failure.
-static int parseHexByte(const std::string& token) {
-    std::string t = trim(token);
-    // Remove trailing comma
-    while (!t.empty() && t.back() == ',') t.pop_back();
-    t = trim(t);
-
-    if (t.size() < 3 || t[0] != '0' || (t[1] != 'x' && t[1] != 'X')) {
-        return -1;
-    }
-
-    const char* hex = t.c_str() + 2;
-    char* end = nullptr;
-    unsigned long val = strtoul(hex, &end, 16);
-    if (end == hex || *end != '\0' || val > 0xFF) {
-        return -1;
-    }
-    return static_cast<int>(val);
-}
-
-// --- Decoder: .hpp header -> bytes ---
+// --- Decoder ---
 
 jbyteArray HeaderToFile(JNIEnv* env, jobject /* thiz */, jstring header) {
     if (header == nullptr) {
@@ -171,10 +137,11 @@ jbyteArray HeaderToFile(JNIEnv* env, jobject /* thiz */, jstring header) {
         return env->NewByteArray(0);
     }
 
-    std::string hdr(hdrChars);
+    const size_t hdrLen = strlen(hdrChars);
+    std::string hdr(hdrChars, hdrLen);
     env->ReleaseStringUTFChars(header, hdrChars);
 
-    // Find the byte array: look for "_data[] = {"
+    // Find byte array start: look for "_data[] = {"
     size_t arrayStart = hdr.find("_data[]");
     if (arrayStart == std::string::npos) {
         return env->NewByteArray(0);
@@ -183,7 +150,7 @@ jbyteArray HeaderToFile(JNIEnv* env, jobject /* thiz */, jstring header) {
     if (arrayStart == std::string::npos) {
         return env->NewByteArray(0);
     }
-    arrayStart++; // skip past '{'
+    arrayStart++;
 
     // Find closing '}'
     size_t arrayEnd = hdr.find('}', arrayStart);
@@ -191,36 +158,39 @@ jbyteArray HeaderToFile(JNIEnv* env, jobject /* thiz */, jstring header) {
         return env->NewByteArray(0);
     }
 
-    std::string arrayContent = hdr.substr(arrayStart, arrayEnd - arrayStart);
-
-    // Parse hex bytes
+    // Parse hex bytes directly from string without creating substrings
     std::vector<uint8_t> bytes;
-    bytes.reserve(arrayContent.size() / 4);
+    bytes.reserve(arrayEnd - arrayStart);
 
-    size_t pos = 0;
-    while (pos < arrayContent.size()) {
-        // Skip non-hex characters (spaces, commas, newlines, 0x prefix)
-        while (pos < arrayContent.size()) {
-            char c = arrayContent[pos];
-            if (c == '0' && pos + 1 < arrayContent.size() &&
-                (arrayContent[pos + 1] == 'x' || arrayContent[pos + 1] == 'X')) {
-                break;
-            }
+    size_t pos = arrayStart;
+    while (pos < arrayEnd) {
+        // Skip to '0'
+        while (pos < arrayEnd && hdr[pos] != '0') pos++;
+        if (pos >= arrayEnd) break;
+
+        // Check for 0x prefix
+        if (pos + 1 >= arrayEnd || (hdr[pos + 1] != 'x' && hdr[pos + 1] != 'X')) {
+            pos++;
+            continue;
+        }
+
+        // Parse hex digits after 0x
+        pos += 2;
+        uint8_t val = 0;
+        int hexCount = 0;
+        while (pos < arrayEnd && hexCount < 2) {
+            char c = hdr[pos];
+            uint8_t nibble;
+            if (c >= '0' && c <= '9') nibble = c - '0';
+            else if (c >= 'a' && c <= 'f') nibble = 10 + (c - 'a');
+            else if (c >= 'A' && c <= 'F') nibble = 10 + (c - 'A');
+            else break;
+            val = (val << 4) | nibble;
+            hexCount++;
             pos++;
         }
-        if (pos >= arrayContent.size()) break;
-
-        // Extract token starting with 0x
-        size_t tokenStart = pos;
-        while (pos < arrayContent.size() && arrayContent[pos] != ',' &&
-               arrayContent[pos] != ' ' && arrayContent[pos] != '\n' &&
-               arrayContent[pos] != '\r' && arrayContent[pos] != '\t') {
-            pos++;
-        }
-        std::string token = arrayContent.substr(tokenStart, pos - tokenStart);
-        int val = parseHexByte(token);
-        if (val >= 0) {
-            bytes.push_back(static_cast<uint8_t>(val));
+        if (hexCount == 2) {
+            bytes.push_back(val);
         }
     }
 

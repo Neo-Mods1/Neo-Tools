@@ -115,6 +115,16 @@ fun CppHeaderDecoderScreen(onBack: () -> Unit) {
                     )
 
                     if (headerText.isNotEmpty()) {
+                        // Show preview only to avoid OOM on large headers
+                        val previewText = remember(headerText) {
+                            val lines = headerText.lines()
+                            if (lines.size > 100) {
+                                lines.take(100).joinToString("\n") + "\n\n... (" + (lines.size - 100) + " more lines)"
+                            } else {
+                                headerText
+                            }
+                        }
+
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -130,7 +140,7 @@ fun CppHeaderDecoderScreen(onBack: () -> Unit) {
                             AndroidView(
                                 factory = { ctx ->
                                     EditText(ctx).apply {
-                                        setText(headerText)
+                                        setText(previewText)
                                         isSingleLine = false
                                         maxLines = Int.MAX_VALUE
                                         isFocusable = false

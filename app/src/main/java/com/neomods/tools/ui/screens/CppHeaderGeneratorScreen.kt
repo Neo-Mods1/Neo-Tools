@@ -240,6 +240,16 @@ fun CppHeaderGeneratorScreen(onBack: () -> Unit) {
                     style = MaterialTheme.typography.titleMedium
                 )
 
+                // Show preview only to avoid OOM on large files
+                val previewText = remember(header) {
+                    val lines = header.lines()
+                    if (lines.size > 100) {
+                        lines.take(100).joinToString("\n") + "\n\n... (" + (lines.size - 100) + " more lines)"
+                    } else {
+                        header
+                    }
+                }
+
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
@@ -255,7 +265,7 @@ fun CppHeaderGeneratorScreen(onBack: () -> Unit) {
                         AndroidView(
                             factory = { ctx ->
                                 EditText(ctx).apply {
-                                    setText(header)
+                                    setText(previewText)
                                     isSingleLine = false
                                     maxLines = Int.MAX_VALUE
                                     isFocusable = false
