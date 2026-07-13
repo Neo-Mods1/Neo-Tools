@@ -11,6 +11,7 @@ package com.neomods.tools.navigation
 sealed class Screen(val route: String) {
 
     data object Splash : Screen("splash")
+    data object Welcome : Screen("welcome")
     data object CrashOptIn : Screen("crash_opt_in")
     data object Permissions : Screen("permissions")
     data object AllSet : Screen("all_set")

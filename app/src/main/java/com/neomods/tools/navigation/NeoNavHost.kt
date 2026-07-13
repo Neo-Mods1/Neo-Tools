@@ -1,13 +1,17 @@
 package com.neomods.tools.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.neomods.tools.NeoToolsApplication
+import com.neomods.tools.permission.PermissionManager
 import com.neomods.tools.ui.screens.AllSetScreen
 import com.neomods.tools.ui.screens.CategoryScreen
 import com.neomods.tools.ui.screens.CrashOptInScreen
@@ -15,21 +19,34 @@ import com.neomods.tools.ui.screens.HomeScreen
 import com.neomods.tools.ui.screens.PermissionScreen
 import com.neomods.tools.ui.screens.PlaceholderToolScreen
 import com.neomods.tools.ui.screens.SplashScreen
+import com.neomods.tools.ui.screens.WelcomeIntroScreen
 import com.neomods.tools.category.CategoryViewModel
 import com.neomods.tools.tools.ToolViewModel
 
 /**
  * Application navigation graph.
  *
- * Onboarding flow (Splash -> Crash opt-in -> Permissions -> All set) is kept
- * separate from the main flow (Home -> Category -> Tool) so the back stack can
- * be cleared once onboarding completes.
+ * Onboarding (Splash -> Welcome -> Crash opt-in -> Permissions -> All set) is
+ * shown only when needed: each step is skipped once completed, so on
+ * subsequent launches the app goes straight to Home.
  */
 @Composable
 fun NeoNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val app = context.applicationContext as NeoToolsApplication
+    val onboarding = app.onboardingRepository
+    val permissions = remember { app.permissionRepository.getPermissions() }
+
+    fun nextOnboardingStep(): String = when {
+        !onboarding.isWelcomeSeen() -> Screen.Welcome.route
+        !onboarding.isCrashOptInDecided() -> Screen.CrashOptIn.route
+        !PermissionManager.allGranted(context, permissions) -> Screen.Permissions.route
+        else -> Screen.Home.route
+    }
+
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route,
@@ -38,7 +55,23 @@ fun NeoNavHost(
         composable(Screen.Splash.route) {
             SplashScreen(
                 onFinished = {
-                    navController.navigate(Screen.CrashOptIn.route) {
+                    navController.navigate(nextOnboardingStep()) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Welcome.route) {
+            WelcomeIntroScreen(
+                onFinished = {
+                    onboarding.setWelcomeSeen()
+                    val next = when {
+                        !onboarding.isCrashOptInDecided() -> Screen.CrashOptIn.route
+                        !PermissionManager.allGranted(context, permissions) -> Screen.Permissions.route
+                        else -> Screen.Home.route
+                    }
+                    navController.navigate(next) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
@@ -48,8 +81,14 @@ fun NeoNavHost(
         composable(Screen.CrashOptIn.route) {
             CrashOptInScreen(
                 onContinue = {
-                    navController.navigate(Screen.Permissions.route) {
-                        popUpTo(Screen.CrashOptIn.route) { inclusive = true }
+                    onboarding.setCrashOptInDecided()
+                    val next = if (PermissionManager.allGranted(context, permissions)) {
+                        Screen.Home.route
+                    } else {
+                        Screen.Permissions.route
+                    }
+                    navController.navigate(next) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
             )

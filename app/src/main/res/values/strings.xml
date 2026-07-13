@@ -35,6 +35,15 @@
     <string name="coming_soon">Coming Soon</string>
     <string name="tool_placeholder_body">This tool is not implemented yet. It will be available in a future update.</string>
 
+    <string name="welcome_skip">Skip</string>
+    <string name="welcome_next">Next</string>
+    <string name="welcome_get_started">Get Started</string>
+
+    <string name="all_set_title">You\'re all set</string>
+    <string name="all_set_subtitle">Neo Tools is ready. Your permissions are set up and the toolkit is unlocked.</string>
+    <string name="all_set_ready">Ready to go</string>
+    <string name="all_set_enter">Enter Neo Tools</string>
+
     <string name="crash_title">Crash Report</string>
     <string name="crash_copy">Copy Log</string>
     <string name="crash_restart">Restart App</string>

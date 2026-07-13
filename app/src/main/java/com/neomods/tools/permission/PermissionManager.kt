@@ -34,6 +34,10 @@ object PermissionManager {
         else -> false
     }
 
+    /** True when every permission in [permissions] is currently granted. */
+    fun allGranted(context: Context, permissions: List<Permission>): Boolean =
+        permissions.all { isGranted(context, it) }
+
     /**
      * Intent that opens the correct system screen to grant a permission.
      * Special permissions cannot use the normal dialog and must be granted from
