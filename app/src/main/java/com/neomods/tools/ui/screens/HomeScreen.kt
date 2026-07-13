@@ -1,9 +1,8 @@
 package com.neomods.tools.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -12,7 +11,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,11 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.neomods.tools.R
 import com.neomods.tools.home.HomeViewModel
 import com.neomods.tools.ui.components.CategoryCard
-import com.neomods.tools.ui.components.EmptyState
-import com.neomods.tools.ui.components.NeoSearchBar
 import com.neomods.tools.ui.components.NeoTopBar
-import com.neomods.tools.ui.components.SectionHeader
-import com.neomods.tools.ui.components.ToolCard
 import com.neomods.tools.ui.theme.NeoDimens
 
 @Composable
@@ -40,11 +34,7 @@ fun HomeScreen(
     onSettingsClick: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
-    var query by remember { mutableStateOf("") }
-
-    val categoryResults = remember(query) { viewModel.searchCategories(query) }
-    val toolResults = remember(query) { viewModel.searchTools(query) }
-    val hasQuery = query.isNotBlank()
+    val categories = remember { viewModel.getCategories() }
 
     Scaffold(
         topBar = {
@@ -61,58 +51,25 @@ fun HomeScreen(
             )
         }
     ) { padding ->
-        Column(
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            horizontalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing),
+            verticalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-        ) {
-            NeoSearchBar(
-                value = query,
-                onValueChange = { query = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = NeoDimens.ScreenPadding,
-                        end = NeoDimens.ScreenPadding,
-                        top = NeoDimens.SectionSpacing,
-                        bottom = NeoDimens.SectionSpacing
-                    )
+                .padding(horizontal = NeoDimens.ScreenPadding),
+            contentPadding = PaddingValues(
+                top = NeoDimens.SectionSpacing,
+                bottom = NeoDimens.ScreenPadding
             )
-
-            if (categoryResults.isEmpty() && toolResults.isEmpty()) {
-                EmptyState()
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing),
-                    verticalArrangement = Arrangement.spacedBy(NeoDimens.SectionSpacing),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = NeoDimens.ScreenPadding),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                        bottom = NeoDimens.ScreenPadding
-                    )
-                ) {
-                    items(categoryResults, key = { it.id }) { category ->
-                        CategoryCard(
-                            category = category,
-                            toolCount = viewModel.toolCount(category.id),
-                            onClick = { onCategoryClick(category.id) }
-                        )
-                    }
-
-                    if (hasQuery && toolResults.isNotEmpty()) {
-                        item {
-                            SectionHeader(stringResource(R.string.home_section_tools))
-                        }
-                        items(toolResults, key = { it.id }) { tool ->
-                            ToolCard(
-                                tool = tool,
-                                onClick = { onToolClick(tool.id) }
-                            )
-                        }
-                    }
-                }
+        ) {
+            items(categories, key = { it.id }) { category ->
+                CategoryCard(
+                    category = category,
+                    toolCount = viewModel.toolCount(category.id),
+                    onClick = { onCategoryClick(category.id) }
+                )
             }
         }
     }
