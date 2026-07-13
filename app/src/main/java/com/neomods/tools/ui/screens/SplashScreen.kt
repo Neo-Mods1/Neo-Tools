@@ -47,7 +47,7 @@ fun SplashScreen(onFinished: () -> Unit) {
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_launcher_foreground),
+                painter = painterResource(R.mipmap.ic_launcher),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(96.dp)
