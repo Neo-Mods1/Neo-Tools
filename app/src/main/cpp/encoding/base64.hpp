@@ -3,9 +3,25 @@
 #include <jni.h>
 
 /**
- * Registers the native methods implemented in this translation unit against
- * their Kotlin-side counterpart (`com.neomods.tools.native.NeoNative`).
+ * Encryption & Decryption -> Base64 encoder implementation.
  *
- * Called from `JNI_OnLoad` in Main.cpp. Returns JNI_OK on success.
+ * The native method is resolved exclusively through RegisterNatives (see
+ * Main.cpp), so there is no exported Java_com_... symbol. The implementation
+ * lives in this translation unit; the registration lives in Main.cpp.
  */
-int RegisterEncoding(JNIEnv* env);
+namespace neotools {
+namespace encoding {
+
+/**
+ * Encode raw bytes to standard RFC 4648 Base64 (single line, no padding
+ * newlines). Maps to the Kotlin-side `external fun encodeBase64`.
+ *
+ * @param env  JNI environment.
+ * @param thiz the `NeoNative` instance (unused; encoder is stateless).
+ * @param data input bytes to encode.
+ * @return the Base64 text as a `jstring`.
+ */
+jstring EncodeBase64(JNIEnv* env, jobject thiz, jbyteArray data);
+
+} // namespace encoding
+} // namespace neotools
