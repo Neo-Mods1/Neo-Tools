@@ -38,13 +38,6 @@ internal class DefaultCategoryRepository : CategoryRepository {
             tags = listOf("Dex", "Smali", "Manifest", "Sign")
         ),
         Category(
-            id = "binary",
-            title = "Binary Tools",
-            description = "Hex, diff and checksum utilities",
-            iconRes = R.drawable.ic_cat_binary,
-            tags = listOf("Hex", "Diff", "Checksum")
-        ),
-        Category(
             id = "image",
             title = "Image Tools",
             description = "Optimize and convert images",
@@ -52,39 +45,11 @@ internal class DefaultCategoryRepository : CategoryRepository {
             tags = listOf("PNG", "SVG", "WebP")
         ),
         Category(
-            id = "xml",
-            title = "XML Tools",
-            description = "Format, validate and query XML",
-            iconRes = R.drawable.ic_cat_xml,
-            tags = listOf("Format", "Validate", "XPath")
-        ),
-        Category(
             id = "encoding",
-            title = "Encoding",
-            description = "Base64, URL and hex encoders",
+            title = "Encryption & Decryption",
+            description = "Encode and decode files and text",
             iconRes = R.drawable.ic_cat_encoding,
-            tags = listOf("Base64", "URL", "Hex")
-        ),
-        Category(
-            id = "text",
-            title = "Text Tools",
-            description = "Case, sort and regex helpers",
-            iconRes = R.drawable.ic_cat_text,
-            tags = listOf("Case", "Sort", "Regex")
-        ),
-        Category(
-            id = "crypto",
-            title = "Crypto",
-            description = "Hashes and ciphers",
-            iconRes = R.drawable.ic_cat_crypto,
-            tags = listOf("Hash", "AES", "RSA")
-        ),
-        Category(
-            id = "developer",
-            title = "Developer",
-            description = "HTTP, JSON and database tools",
-            iconRes = R.drawable.ic_cat_developer,
-            tags = listOf("HTTP", "JSON", "SQLite")
+            tags = listOf("Base64", "Encode", "Decode")
         )
     )
 

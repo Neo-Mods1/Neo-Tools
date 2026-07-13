@@ -39,40 +39,15 @@ internal class DefaultToolRepository : ToolRepository {
             Tool("apk_zipalign", "apk", "ZipAlign", "Align an APK for performance", R.drawable.ic_tool_zip, "Build"),
             Tool("apk_build", "apk", "Build APK", "Assemble a package from sources", R.drawable.ic_tool_build, "Build")
         ),
-        "binary" to listOf(
-            Tool("bin_hex", "binary", "Hex Viewer", "Hex dump of any file", R.drawable.ic_tool_hex, "Inspect"),
-            Tool("bin_diff", "binary", "File Diff", "Compare two files", R.drawable.ic_tool_diff, "Compare"),
-            Tool("bin_checksum", "binary", "Checksum", "Compute MD5/SHA checksums", R.drawable.ic_tool_checksum, "Verify")
-        ),
+        "binary" to listOf(),
         "image" to listOf(
             Tool("img_optimize", "image", "PNG Optimizer", "Compress PNG assets", R.drawable.ic_tool_image_edit, "Optimize"),
             Tool("img_convert", "image", "Format Convert", "Convert between image formats", R.drawable.ic_tool_convert, "Convert"),
             Tool("img_exif", "image", "EXIF Viewer", "Read image metadata", R.drawable.ic_tool_exif, "Metadata")
         ),
-        "xml" to listOf(
-            Tool("xml_format", "xml", "XML Formatter", "Pretty-print XML", R.drawable.ic_tool_format, "Format"),
-            Tool("xml_validate", "xml", "XML Validator", "Validate against a schema", R.drawable.ic_tool_validate, "Validate"),
-            Tool("xml_xpath", "xml", "XPath Tool", "Query XML with XPath", R.drawable.ic_tool_xpath, "Query")
-        ),
+        "xml" to listOf(),
         "encoding" to listOf(
-            Tool("enc_base64", "encoding", "Base64", "Encode and decode Base64", R.drawable.ic_tool_base64, "Encode"),
-            Tool("enc_url", "encoding", "URL Encode", "Percent-encode strings", R.drawable.ic_tool_url, "Encode"),
-            Tool("enc_hex", "encoding", "Hex Encode", "Convert text to hex", R.drawable.ic_tool_hex, "Encode")
-        ),
-        "text" to listOf(
-            Tool("txt_case", "text", "Case Convert", "Switch text casing", R.drawable.ic_tool_case, "Transform"),
-            Tool("txt_sort", "text", "Line Sort", "Sort lines alphabetically", R.drawable.ic_tool_sort, "Transform"),
-            Tool("txt_regex", "text", "Regex", "Test regular expressions", R.drawable.ic_tool_regex, "Patterns")
-        ),
-        "crypto" to listOf(
-            Tool("cry_hash", "crypto", "Hash", "MD5 / SHA / SHA-256 digests", R.drawable.ic_tool_hash, "Digests"),
-            Tool("cry_aes", "crypto", "AES", "Symmetric encryption", R.drawable.ic_tool_default, "Ciphers"),
-            Tool("cry_rsa", "crypto", "RSA", "Asymmetric key tools", R.drawable.ic_tool_rsa, "Ciphers")
-        ),
-        "developer" to listOf(
-            Tool("dev_http", "developer", "HTTP Client", "Send and inspect requests", R.drawable.ic_tool_http, "Network"),
-            Tool("dev_json", "developer", "JSON Viewer", "Format and query JSON", R.drawable.ic_tool_json, "Data"),
-            Tool("dev_sqlite", "developer", "SQLite", "Browse SQLite databases", R.drawable.ic_tool_sqlite, "Data")
+            Tool("enc_base64", "encoding", "Base64 Encoder", "Encode images and files to Base64", R.drawable.ic_tool_base64, "Encode")
         )
     )
 

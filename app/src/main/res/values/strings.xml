@@ -48,4 +48,21 @@
     <string name="crash_copy">Copy Log</string>
     <string name="crash_restart">Restart App</string>
     <string name="crash_send_report">Send anonymous crash report</string>
+
+    <string name="remove">Remove</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="base64_title">Base64 Encoder</string>
+    <string name="base64_select_files">Select Files</string>
+    <string name="base64_selected">Selected</string>
+    <string name="base64_converted">Converted</string>
+    <string name="base64_copy">Copy</string>
+    <string name="base64_save">Save</string>
+    <string name="base64_select_dialog_title">What do you want to select?</string>
+    <string name="base64_select_image">Image</string>
+    <string name="base64_select_file">File</string>
+    <string name="base64_empty_hint">Encoded output will appear here.</string>
+    <string name="base64_saved">Base64 saved</string>
+    <string name="base64_save_failed">Could not save file</string>
+    <string name="base64_size">Base64 · %1$s</string>
 </resources>

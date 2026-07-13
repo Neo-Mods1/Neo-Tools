@@ -17,6 +17,7 @@ val hasKeystore = keystorePropertiesFile.exists()
 android {
     namespace = "com.neomods.tools"
     compileSdk = 35
+    ndkVersion = "27.0.12077973"
 
     defaultConfig {
         applicationId = "com.neomods.tools"
@@ -29,7 +30,17 @@ android {
             useSupportLibrary = false
         }
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                // Default C++ standard flags; per-target flags live in CMakeLists.txt.
+                cppFlags += "-std=c++17"
+            }
+        }
+
+        ndk {
+            // Only the ABIs we care about: keeps the APK small and the build fast.
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        }
     }
     
     signingConfigs {
@@ -84,6 +95,13 @@ android {
         buildConfig = true
     }
 
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -110,14 +128,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     debugImplementation(libs.androidx.ui.tooling)
 
-    // Material components (used by the XML-based crash report screen only)
+    // Material components
     implementation(libs.material)
 
-    // Lottie animations (onboarding splash + "all set" screen)
+    // Lottie animations
     implementation(libs.lottie.compose)
-
-    // Test
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 }
