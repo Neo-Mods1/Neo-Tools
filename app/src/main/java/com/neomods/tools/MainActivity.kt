@@ -22,14 +22,8 @@ import com.neomods.tools.ui.theme.NeoToolsTheme
 import com.neomods.tools.theme.ThemeMode
 import androidx.compose.runtime.collectAsState
 
-/**
- * Single, Compose-only activity. All screens are hosted by [NeoNavHost].
- */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Let the app draw behind the system bars so the themed surface shows
-        // through the status/navigation bars instead of a system-default colour.
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         setContent {
             AppContent()
@@ -55,12 +49,10 @@ private fun AppContent() {
         if (!view.isInEditMode) {
             SideEffect {
                 val window = (view.context as ComponentActivity).window
-                window.statusBarColor = android.graphics.Color.TRANSPARENT
-                window.navigationBarColor = android.graphics.Color.TRANSPARENT
-                val insets = WindowCompat.getInsetsController(window, view)
-                // Light status-bar icons when the app is in dark theme, and vice-versa.
-                insets.isAppearanceLightStatusBars = !darkTheme
-                insets.isAppearanceLightNavigationBars = !darkTheme
+                WindowCompat.getInsetsController(window, view)
+                    .isAppearanceLightStatusBars = !darkTheme
+                WindowCompat.getInsetsController(window, view)
+                    .isAppearanceLightNavigationBars = !darkTheme
             }
         }
 
