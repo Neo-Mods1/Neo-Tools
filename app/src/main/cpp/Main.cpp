@@ -199,7 +199,7 @@ int RegisterCppConverter(JNIEnv* env) {
 
 // Check for a native crash file written by the signal handler.
 // Returns the crash log content as a Java String, or null if no crash occurred.
-static jstring checkNativeCrashFile(JNIEnv* env) {
+static jstring checkNativeCrashFile(JNIEnv* env, jobject /* this */) {
     const char* crashPath = "/data/data/com.neomods.tools/files/native_crash.txt";
     int fd = open(crashPath, O_RDONLY);
     if (fd < 0) return nullptr;
