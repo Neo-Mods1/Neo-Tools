@@ -16,6 +16,7 @@ espresso = "3.6.1"
 coil3 = "3.0.4"
 androidsvg = "1.4"
 palette = "1.0.0"
+kotlinxCoroutines = "1.8.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,6 +43,8 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 coil3-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil3" }
 androidsvg = { group = "com.caverock", name = "androidsvg-aar", version.ref = "androidsvg" }
 androidx-palette = { group = "androidx.palette", name = "palette-ktx", version.ref = "palette" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,15 +1,21 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
 }
 
+val v = Properties().apply {
+    load(rootProject.file("versions.properties").inputStream())
+}
+
 android {
     namespace = "ja.burhanrashid52.photoeditor"
-    compileSdk = 36
+    compileSdk = v.getProperty("compileSdk").toInt()
 
     defaultConfig {
-        minSdk = 30
-        targetSdk = 36
+        minSdk = v.getProperty("minSdk").toInt()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -37,18 +43,11 @@ android {
             isIncludeAndroidResources = true
         }
     }
-
-    tasks.withType<Javadoc>().configureEach {
-        (options as StandardJavadocOptions).addStringOption("Xdoclint:none", "-quiet")
-        (options as StandardJavadocOptions).addStringOption("encoding", "UTF-8")
-        (options as StandardJavadocOptions).addStringOption("charSet", "UTF-8")
-        isFailOnError = false
-    }
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation(libs.appcompat)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 }
