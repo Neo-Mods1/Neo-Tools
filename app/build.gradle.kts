@@ -123,6 +123,7 @@ dependencies {
 
     // ── Image Editor ──────────────────────────────────────────────
     implementation(project(":photoeditor"))
+    implementation(project(":autobackgroundremover"))
     implementation(libs.coil3.compose)
     implementation(libs.androidsvg)
     implementation(libs.androidx.palette)

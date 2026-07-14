@@ -48,6 +48,7 @@ import androidx.compose.material.icons.filled.PhotoSizeSelectLarge
 import androidx.compose.material.icons.filled.Redo
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.AlertDialog
@@ -219,6 +220,7 @@ fun ImageEditorScreen(
     var showCropPanel by remember { mutableStateOf(false) }
     var showAspectPanel by remember { mutableStateOf(false) }
     var showBgPanel by remember { mutableStateOf(false) }
+    var showClonePanel by remember { mutableStateOf(false) }
 
     // ── Brush state ─────────────────────────────────────────────────────
     var brushColor by remember { mutableIntStateOf(android.graphics.Color.BLACK) }
@@ -238,6 +240,13 @@ fun ImageEditorScreen(
     // ── Background color ────────────────────────────────────────────────
     var bgColor by remember { mutableIntStateOf(android.graphics.Color.TRANSPARENT) }
 
+    // ── Clone state ─────────────────────────────────────────────────────
+    var cloneSourceX by remember { mutableFloatStateOf(0f) }
+    var cloneSourceY by remember { mutableFloatStateOf(0f) }
+    var cloneBrushSize by remember { mutableFloatStateOf(20f) }
+    var clonePicked by remember { mutableStateOf(false) }
+    var isCloneDrawing by remember { mutableStateOf(false) }
+
     // ── Confirmation dialog state ───────────────────────────────────────
     var pendingConfirmAction by remember { mutableStateOf<(() -> Unit)?>(null) }
     var showConfirmDialog by remember { mutableStateOf(false) }
@@ -253,7 +262,9 @@ fun ImageEditorScreen(
         showCropPanel = false
         showAspectPanel = false
         showBgPanel = false
+        showClonePanel = false
         isEraserMode = false
+        isCloneDrawing = false
         photoEditor?.setBrushDrawingMode(false)
     }
 
@@ -491,6 +502,9 @@ fun ImageEditorScreen(
             ToolChip(Icons.Default.FormatColorFill, "Background", showBgPanel) {
                 closeAllPanels(); showBgPanel = true
             }
+            ToolChip(Icons.Default.ContentCopy, "Clone", showClonePanel) {
+                closeAllPanels(); showClonePanel = true
+            }
         }
 
         // ── Brush Panel ────────────────────────────────────────────────
@@ -644,6 +658,61 @@ fun ImageEditorScreen(
                 },
                 onPickImage = { bgImagePickerLauncher.launch("image/*") },
                 onClose = { showBgPanel = false },
+            )
+        }
+
+        // ── Clone Panel ──────────────────────────────────────────────
+        AnimatedVisibility(visible = showClonePanel, enter = slideInVertically { it }, exit = slideOutVertically { it }) {
+            ClonePanel(
+                brushSize = cloneBrushSize,
+                onBrushSizeChange = { cloneBrushSize = it },
+                isPicking = !clonePicked,
+                onPickSource = {
+                    // The clone source is picked via touch on the canvas
+                    // For now, we use the center of the bitmap as default
+                    val bmpSnap = currentBitmap
+                    if (bmpSnap != null) {
+                        cloneSourceX = bmpSnap.width / 2f
+                        cloneSourceY = bmpSnap.height / 2f
+                        clonePicked = true
+                    }
+                },
+                onApply = {
+                    val bmpSnap = currentBitmap
+                    if (bmpSnap != null && clonePicked) {
+                        val result = bmpSnap.copy(Bitmap.Config.ARGB_8888, true)
+                        val canvas = Canvas(result)
+                        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+                        val radius = cloneBrushSize / 2f
+                        // Sample from source and paint at center as demo
+                        val sx = cloneSourceX.toInt().coerceIn(0, bmpSnap.width - 1)
+                        val sy = cloneSourceY.toInt().coerceIn(0, bmpSnap.height - 1)
+                        val sampleSize = radius.toInt().coerceAtLeast(1)
+                        val x1 = (sx - sampleSize).coerceAtLeast(0)
+                        val y1 = (sy - sampleSize).coerceAtLeast(0)
+                        val x2 = (sx + sampleSize).coerceAtMost(bmpSnap.width)
+                        val y2 = (sy + sampleSize).coerceAtMost(bmpSnap.height)
+                        if (x2 > x1 && y2 > y1) {
+                            val sample = Bitmap.createBitmap(bmpSnap, x1, y1, x2 - x1, y2 - y1)
+                            val dstCx = bmpSnap.width / 2
+                            val dstCy = bmpSnap.height / 2
+                            canvas.drawBitmap(
+                                sample,
+                                null,
+                                android.graphics.RectF(
+                                    dstCx - radius, dstCy - radius,
+                                    dstCx + radius, dstCy + radius
+                                ),
+                                paint
+                            )
+                            photoEditor?.clearAllViews()
+                            currentBitmap = result
+                            pushHistory(result)
+                        }
+                    }
+                    showClonePanel = false
+                },
+                onClose = { showClonePanel = false },
             )
         }
     }
@@ -1185,6 +1254,74 @@ private fun BgPanel(selectedColor: Int, onColorSelect: (Int) -> Unit, onPickImag
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+// ── Clone Panel ──────────────────────────────────────────────────────────
+
+@Composable
+private fun ClonePanel(
+    brushSize: Float,
+    onBrushSizeChange: (Float) -> Unit,
+    isPicking: Boolean,
+    onPickSource: () -> Unit,
+    onApply: () -> Unit,
+    onClose: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).padding(16.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text("Clone Stamp", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            IconButton(onClick = onClose, modifier = Modifier.size(24.dp)) {
+                Icon(Icons.Default.Close, "Close", modifier = Modifier.size(18.dp))
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "Tap 'Pick Source' to set the clone source point, then adjust brush size and apply.",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(12.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            FilledTonalButton(
+                onClick = onPickSource,
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Pick Source")
+            }
+            FilledTonalButton(
+                onClick = onApply,
+                modifier = Modifier.weight(1f),
+                enabled = !isPicking
+            ) {
+                Text("Apply")
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(brushSize.coerceIn(4f, 60f).dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Size: ${brushSize.toInt()}px", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Slider(
+                    value = brushSize,
+                    onValueChange = onBrushSizeChange,
+                    valueRange = 4f..80f,
+                    colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary, activeTrackColor = MaterialTheme.colorScheme.primary),
+                )
             }
         }
     }

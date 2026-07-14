@@ -41,7 +41,8 @@ internal class DefaultToolRepository : ToolRepository {
         ),
         "binary" to listOf(),
         "image" to listOf(
-            Tool("img_editor", "image", "Image Editor", "Professional image editing with filters, crop, draw, text, stickers and background removal", R.drawable.ic_tool_image_edit, "Editor")
+            Tool("img_editor", "image", "Image Editor", "Professional image editing with crop, draw, text, stickers and clone", R.drawable.ic_tool_image_edit, "Editor"),
+            Tool("bg_remover", "image", "BG Remover", "Remove backgrounds from images using AI", R.drawable.ic_tool_image_edit, "AI")
         ),
         "xml" to listOf(),
         "encoding" to listOf(

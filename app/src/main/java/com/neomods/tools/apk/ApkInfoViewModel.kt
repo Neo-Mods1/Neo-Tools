@@ -35,9 +35,8 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
             val apps = pm.getInstalledPackages(0)
                 .filter { pkg ->
                     val flags = pkg.applicationInfo?.flags ?: 0
-                    // User-installed apps only: exclude system, updated system, and suspended
-                    (flags and ApplicationInfo.FLAG_SYSTEM) == 0 &&
-                    (flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0
+                    (flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0 ||
+                    (flags and ApplicationInfo.FLAG_SYSTEM) == 0
                 }
                 .sortedBy { pm.getApplicationLabel(it.applicationInfo!!).toString().lowercase() }
 

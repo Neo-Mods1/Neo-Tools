@@ -23,3 +23,7 @@
 # PhotoEditor library (View-based, internal classes accessed via layout XML / reflection)
 -keep class ja.burhanrashid52.photoeditor.** { *; }
 -dontwarn ja.burhanrashid52.photoeditor.**
+
+# Background Remover library (ML Kit)
+-keep class com.slowmac.autobackgroundremover.** { *; }
+-dontwarn com.slowmac.autobackgroundremover.**

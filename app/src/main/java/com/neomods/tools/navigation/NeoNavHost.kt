@@ -1,5 +1,7 @@
 package com.neomods.tools.navigation
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -120,7 +122,11 @@ fun NeoNavHost(
             )
         }
 
-        composable(Screen.Home.route) {
+        composable(
+            Screen.Home.route,
+            enterTransition = { fadeIn(animationSpec = tween(200)) },
+            exitTransition = { fadeOut(animationSpec = tween(150)) }
+        ) {
             HomeScreen(
                 onCategoryClick = { categoryId ->
                     navController.navigate(Screen.Category.create(categoryId))
@@ -132,20 +138,36 @@ fun NeoNavHost(
             )
         }
 
-        composable(Screen.Settings.route) {
+        composable(
+            Screen.Settings.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(250)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { it / 3 }, animationSpec = tween(250)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(250)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(250)) }
+        ) {
             SettingsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToAbout = { navController.navigate(Screen.About.route) }
             )
         }
 
-        composable(Screen.About.route) {
+        composable(
+            Screen.About.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(250)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { it / 3 }, animationSpec = tween(250)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(250)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(250)) }
+        ) {
             AboutScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(
             route = Screen.Category.route,
-            arguments = listOf(navArgument(Screen.Category.ARG) { type = NavType.StringType })
+            arguments = listOf(navArgument(Screen.Category.ARG) { type = NavType.StringType }),
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(250)) + fadeIn(animationSpec = tween(200)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -it / 3 }, animationSpec = tween(250)) + fadeOut(animationSpec = tween(150)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it / 3 }, animationSpec = tween(250)) + fadeIn(animationSpec = tween(200)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(250)) + fadeOut(animationSpec = tween(150)) }
         ) { backStack ->
             val viewModel: CategoryViewModel = viewModel(backStack)
             CategoryScreen(
@@ -159,7 +181,9 @@ fun NeoNavHost(
 
         composable(
             route = Screen.Tool.route,
-            arguments = listOf(navArgument(Screen.Tool.ARG) { type = NavType.StringType })
+            arguments = listOf(navArgument(Screen.Tool.ARG) { type = NavType.StringType }),
+            enterTransition = { fadeIn(animationSpec = tween(200)) },
+            exitTransition = { fadeOut(animationSpec = tween(200)) }
         ) { backStack ->
             val toolId = backStack.arguments?.getString(Screen.Tool.ARG) ?: ""
             when (toolId) {
@@ -168,6 +192,7 @@ fun NeoNavHost(
                 "enc_cpp_header" -> CppHeaderGeneratorScreen(onBack = { navController.popBackStack() })
                 "dec_cpp_header" -> CppHeaderDecoderScreen(onBack = { navController.popBackStack() })
                 "img_editor" -> ImageEditorScreen(onBack = { navController.popBackStack() })
+                "bg_remover" -> BackgroundRemoverScreen(onBack = { navController.popBackStack() })
                 "apk_info" -> ApkInfoScreen(onBack = { navController.popBackStack() })
                 else -> {
                     val viewModel: ToolViewModel = viewModel(backStack)
