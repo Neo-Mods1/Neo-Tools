@@ -300,7 +300,7 @@ fun ContactRow(title: String, onClick: () -> Unit) {
     ) {
         Text(text = title, style = MaterialTheme.typography.bodyLarge)
         Icon(
-            imageVector = Icons.Default.OpenInNew,
+            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(18.dp)

@@ -22,9 +22,11 @@ abstract class BaseActivity : AppCompatActivity() {
 
     open val enableSystemBarTheming: Boolean = true
 
+    @Suppress("DEPRECATION")
     open val navigationBarColor: Int
         get() = android.graphics.Color.BLACK
 
+    @Suppress("DEPRECATION")
     open val statusBarColor: Int
         get() = android.graphics.Color.BLACK
 
@@ -50,7 +52,9 @@ abstract class BaseActivity : AppCompatActivity() {
             isAppearanceLightNavigationBars = false
             isAppearanceLightStatusBars = false
         }
+        @Suppress("DEPRECATION")
         window.statusBarColor = statusBarColor
+        @Suppress("DEPRECATION")
         window.navigationBarColor = navigationBarColor
     }
 }

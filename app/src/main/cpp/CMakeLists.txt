@@ -29,6 +29,11 @@ find_library(
         jnigraphics
 )
 
+find_library(
+        z-lib
+        z
+)
+
 target_include_directories(
         neotools
         PRIVATE
@@ -40,4 +45,5 @@ target_link_libraries(
         neotools
         ${log-lib}
         ${jnigraphics-lib}
+        ${z-lib}
 )

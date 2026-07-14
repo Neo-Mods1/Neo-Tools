@@ -65,8 +65,11 @@ private fun AppContent() {
             val surfaceColor = MaterialTheme.colorScheme.surface
             if (!view.isInEditMode) {
                 SideEffect {
+                    @Suppress("DEPRECATION")
                     val window = (view.context as ComponentActivity).window
+                    @Suppress("DEPRECATION")
                     window.statusBarColor = surfaceColor.toArgb()
+                    @Suppress("DEPRECATION")
                     window.navigationBarColor = surfaceColor.toArgb()
                     WindowCompat.getInsetsController(window, view)
                         .isAppearanceLightStatusBars = !darkTheme

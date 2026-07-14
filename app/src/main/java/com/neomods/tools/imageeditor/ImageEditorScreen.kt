@@ -65,10 +65,10 @@ fun ImageEditorScreen(
                 },
                 actions = {
                     IconButton(onClick = { viewModel.undo() }, enabled = state.canUndo) {
-                        Icon(Icons.Default.Undo, contentDescription = "Undo")
+                        Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Undo")
                     }
                     IconButton(onClick = { viewModel.redo() }, enabled = state.canRedo) {
-                        Icon(Icons.Default.Redo, contentDescription = "Redo")
+                        Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = "Redo")
                     }
                     IconButton(onClick = { viewModel.showExportDialog() }) {
                         Icon(Icons.Default.SaveAlt, contentDescription = "Export")
@@ -279,7 +279,7 @@ private fun EditorToolbar(
         ToolItem(EditorTool.SELECT, Icons.Default.TouchApp, "Select"),
         ToolItem(EditorTool.ADJUST, Icons.Default.Tune, "Adjust"),
         ToolItem(EditorTool.FILTERS, Icons.Default.AutoFixHigh, "Filters"),
-        ToolItem(EditorTool.CURVES, Icons.Default.ShowChart, "Curves"),
+        ToolItem(EditorTool.CURVES, Icons.AutoMirrored.Filled.ShowChart, "Curves"),
         ToolItem(EditorTool.CROP, Icons.Default.Crop, "Crop"),
         ToolItem(EditorTool.DRAW, Icons.Default.Brush, "Draw"),
         ToolItem(EditorTool.TEXT, Icons.Default.TextFields, "Text"),

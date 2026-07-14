@@ -3,7 +3,6 @@ package com.neomods.tools.apk
 import android.app.Application
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
-import android.os.Build
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -41,25 +40,23 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
                     packageName = pkg.packageName,
                     label = pm.getApplicationLabel(ai).toString(),
                     versionName = pkg.versionName ?: "",
-                    versionCode = if (Build.VERSION.SDK_INT >= 28) pkg.longVersionCode else pkg.versionCode.toLong(),
+                    versionCode = pkg.longVersionCode,
                     icon = pm.getApplicationIcon(ai),
                     apkPath = ai.sourceDir ?: "",
-                    processName = if (Build.VERSION.SDK_INT >= 28) ai.processName else pkg.packageName,
+                    processName = ai.processName,
                     targetSdk = ai.targetSdkVersion,
-                    minSdk = if (Build.VERSION.SDK_INT >= 24) ai.minSdkVersion else 0,
+                    minSdk = ai.minSdk,
                     uid = ai.uid,
                     dataDir = ai.dataDir ?: "",
                     nativeLibDir = ai.nativeLibraryDir ?: "",
                     sourceDir = ai.sourceDir ?: "",
                     sharedUserId = pkg.sharedUserId ?: "",
-                    installerPackage = pm.getInstallerPackageName(pkg.packageName) ?: "",
+                    installerPackage = try { pm.getInstallSourceInfo(pkg.packageName).installingPackageName ?: "" } catch (_: Exception) { "" },
                     firstInstallTime = pkg.firstInstallTime,
                     lastUpdateTime = pkg.lastUpdateTime,
                     debuggable = (ai.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0,
                     allowBackup = (ai.flags and android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP) != 0,
-                    extractNativeLibs = if (Build.VERSION.SDK_INT >= 23) {
-                        (ai.flags and android.content.pm.ApplicationInfo.FLAG_EXTRACT_NATIVE_LIBS) != 0
-                    } else false,
+                    extractNativeLibs = (ai.flags and android.content.pm.ApplicationInfo.FLAG_EXTRACT_NATIVE_LIBS) != 0,
                     testOnly = (ai.flags and android.content.pm.ApplicationInfo.FLAG_TEST_ONLY) != 0,
                 )
             }
@@ -145,6 +142,7 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun parseApk(app: AppListItem): ApkInfo {
         val pkgInfo = try {
+            @Suppress("DEPRECATION")
             pm.getPackageInfo(app.packageName, PackageManager.GET_SIGNATURES or
                 PackageManager.GET_PERMISSIONS or
                 PackageManager.GET_ACTIVITIES or
