@@ -22,7 +22,7 @@ import java.util.Locale
  *
  * Ported from the CODE-IDE crash system (com.neo.ide.crash.CrashHandler). also owned by me neo mods
  */
-class CrashHandler private constructor() : Thread.UncaughtExceptionHandler {
+class CrashHandler private constructor(context: Context) : Thread.UncaughtExceptionHandler {
 
     companion object {
         private const val PREFS = "crash_handler"
