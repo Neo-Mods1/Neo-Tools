@@ -27,3 +27,8 @@
 # Background Remover library (ML Kit)
 -keep class com.slowmac.autobackgroundremover.** { *; }
 -dontwarn com.slowmac.autobackgroundremover.**
+
+# AXMLPrinter library
+-keep class mt.modder.hub.axml.** { *; }
+-keep class mt.modder.hub.axmlTools.** { *; }
+-dontwarn mt.modder.hub.**

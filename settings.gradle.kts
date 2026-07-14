@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Neo Tools"
-include(":app", ":photoeditor", ":autobackgroundremover")
+include(":app", ":photoeditor", ":autobackgroundremover", ":axmlprinter")
