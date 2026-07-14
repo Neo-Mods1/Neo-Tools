@@ -20,3 +20,7 @@
 -keep public class com.neomods.tools.crash.CrashActivity { *; }
 -keep public class com.neomods.tools.crash.CrashHandler { *; }
 -keep public class com.neomods.tools.crash.CrashReporter { *; }
+
+# PhotoEditor library (View-based, internal classes accessed via layout XML / reflection)
+-keep class ja.burhanrashid52.photoeditor.** { *; }
+-dontwarn ja.burhanrashid52.photoeditor.**

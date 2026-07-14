@@ -19,12 +19,6 @@
 #include "obfuscate.h"
 #include "encoding/base64.hpp"
 #include "encoding/cpp_converter.hpp"
-#include "imageeditor/adjustments.hpp"
-#include "imageeditor/crop.hpp"
-#include "imageeditor/drawing.hpp"
-#include "imageeditor/bgremove.hpp"
-#include "imageeditor/shapes.hpp"
-#include "imageeditor/filters.hpp"
 #include "apk/apk_parser.hpp"
 
 #ifndef LOG_TAG
@@ -67,127 +61,6 @@ int RegisterCppConverter(JNIEnv* env) {
     return JNI_OK;
 }
 
-} // namespace
-
-int RegisterImageEditor(JNIEnv* env) {
-    JNINativeMethod methods[] = {
-        // Adjustments
-        { OBFUSCATE("nativeAdjustBrightness"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustBrightness) },
-        { OBFUSCATE("nativeAdjustContrast"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustContrast) },
-        { OBFUSCATE("nativeAdjustSaturation"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustSaturation) },
-        { OBFUSCATE("nativeAdjustExposure"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustExposure) },
-        { OBFUSCATE("nativeAdjustWarmth"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustWarmth) },
-        { OBFUSCATE("nativeAdjustHighlights"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustHighlights) },
-        { OBFUSCATE("nativeAdjustShadows"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustShadows) },
-        { OBFUSCATE("nativeAdjustSharpness"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustSharpness) },
-        { OBFUSCATE("nativeAdjustVignette"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustVignette) },
-        { OBFUSCATE("nativeAdjustHue"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::AdjustHue) },
-        { OBFUSCATE("nativeApplyAllAdjustments"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;FFFFFFFFFF)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::ApplyAllAdjustments) },
-        // Crop / Transform
-        { OBFUSCATE("nativeCropBitmap"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;IIII)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::CropBitmap) },
-        { OBFUSCATE("nativeRotateBitmap"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::RotateBitmap) },
-        { OBFUSCATE("nativeFlipBitmap"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;Z)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::FlipBitmap) },
-        { OBFUSCATE("nativeResizeBitmap"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;II)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::ResizeBitmap) },
-        // Drawing
-        { OBFUSCATE("nativeRenderStroke"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;[FIFIF)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::RenderStroke) },
-        { OBFUSCATE("nativeRenderStrokesBatch"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F[II[FI[F[F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::RenderStrokesBatch) },
-        // Background removal
-        { OBFUSCATE("nativeRemoveBackground"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;II)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::RemoveBackground) },
-        { OBFUSCATE("nativeRemoveBackgroundByColor"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;II)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::RemoveBackgroundByColor) },
-        // Shapes
-        { OBFUSCATE("nativeRenderShape"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;IIIIFFFZIFIIIIIF)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::RenderShape) },
-        // Filters
-        { OBFUSCATE("nativeFilterGrayscale"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::FilterGrayscale) },
-        { OBFUSCATE("nativeFilterSepia"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::FilterSepia) },
-        { OBFUSCATE("nativeFilterInvert"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::FilterInvert) },
-        { OBFUSCATE("nativeFilterThreshold"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::FilterThreshold) },
-        { OBFUSCATE("nativeFilterBlur"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::FilterBlur) },
-        { OBFUSCATE("nativeFilterPixelate"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;I)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::FilterPixelate) },
-        { OBFUSCATE("nativeFilterEmboss"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;F)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::FilterEmboss) },
-        // Eyedropper
-        { OBFUSCATE("nativeGetPixelColor"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;II)I"),
-          reinterpret_cast<void*>(neotools::imageeditor::GetPixelColor) },
-        // Histogram
-        { OBFUSCATE("nativeComputeHistogram"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;)[I"),
-          reinterpret_cast<void*>(neotools::imageeditor::ComputeHistogram) },
-        // Curves
-        { OBFUSCATE("nativeApplyCurvesLut"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;[I)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::ApplyCurvesLut) },
-        // Clone stamp
-        { OBFUSCATE("nativeCloneStamp"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;IIIIIF)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::CloneStamp) },
-        // Blend
-        { OBFUSCATE("nativeBlendBitmaps"),
-          OBFUSCATE("(Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;IF)Landroid/graphics/Bitmap;"),
-          reinterpret_cast<void*>(neotools::imageeditor::BlendBitmaps) },
-    };
-
-    jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));
-    if (clazz == nullptr) return JNI_ERR;
-    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0) {
-        return JNI_ERR;
-    }
-    return JNI_OK;
-}
-
 int RegisterApkTools(JNIEnv* env) {
     JNINativeMethod methods[] = {
         { OBFUSCATE("nativeParseApkInfo"),
@@ -218,6 +91,8 @@ int RegisterApkTools(JNIEnv* env) {
     return JNI_OK;
 }
 
+} // namespace
+
 extern "C"
 JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM* vm, void* /* reserved */) {
@@ -234,11 +109,6 @@ JNI_OnLoad(JavaVM* vm, void* /* reserved */) {
     if (RegisterCppConverter(env) != JNI_OK) {
         __android_log_print(ANDROID_LOG_WARN, LOG_TAG,
             "CppConverter native registration failed");
-    }
-
-    if (RegisterImageEditor(env) != JNI_OK) {
-        __android_log_print(ANDROID_LOG_WARN, LOG_TAG,
-            "ImageEditor native registration failed");
     }
 
     if (RegisterApkTools(env) != JNI_OK) {

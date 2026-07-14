@@ -1,9 +1,14 @@
+import java.io.File
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+}
+
+val v = Properties().apply {
+    load(rootProject.file("versions.properties").inputStream())
 }
 
 val keystorePropertiesFile = rootProject.file("app/release-key.properties")
@@ -23,8 +28,8 @@ val abiList =
 
 android {
     namespace = "com.neomods.tools"
-    compileSdk = 36
-    ndkVersion = "23.1.7779620"
+    compileSdk = v.getProperty("compileSdk").toInt()
+    ndkVersion = v.getProperty("ndkVersion")
 
     defaultConfig {
         applicationId = "com.neomods.tools"
@@ -143,12 +148,8 @@ dependencies {
     implementation(libs.lottie.compose)
 
     // ── Image Editor ──────────────────────────────────────────────
-    // Image loading (Compose-native)
-    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
-
-    // SVG rendering (for sticker/icon assets)
-    implementation("com.caverock:androidsvg-aar:1.4")
-
-    // Palette (extract dominant colors)
-    implementation("androidx.palette:palette-ktx:1.0.0")
+    implementation(project(":photoeditor"))
+    implementation(libs.coil3.compose)
+    implementation(libs.androidsvg)
+    implementation(libs.androidx.palette)
 }

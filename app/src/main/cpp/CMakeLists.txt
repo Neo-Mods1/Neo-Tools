@@ -29,12 +29,6 @@ add_library(
     Main.cpp
     encoding/base64.cpp
     encoding/cpp_converter.cpp
-    imageeditor/adjustments.cpp
-    imageeditor/crop.cpp
-    imageeditor/drawing.cpp
-    imageeditor/bgremove.cpp
-    imageeditor/shapes.cpp
-    imageeditor/filters.cpp
     apk/apk_parser.cpp
 )
 

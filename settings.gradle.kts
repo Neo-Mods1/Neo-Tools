@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Neo Tools"
-include(":app")
+include(":app", ":photoeditor")
