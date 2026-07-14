@@ -26,7 +26,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -85,7 +85,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ja.burhanrashid52.photoeditor.PhotoEditor
@@ -855,14 +854,10 @@ private fun CropOverlay(
                 "bl" to Offset(cropLeft, cropBottom),
                 "br" to Offset(cropRight, cropBottom),
             ).forEach { (handle, pos) ->
-                val handleOffsetX = pos.x
-                val handleOffsetY = pos.y
                 Box(modifier = Modifier
-                    .offset {
-                        IntOffset(
-                            (handleOffsetX * size.width - 12.dp.toPx()).roundToInt(),
-                            (handleOffsetY * size.height - 12.dp.toPx()).roundToInt()
-                        )
+                    .graphicsLayer {
+                        translationX = pos.x * size.width - 12.dp.toPx()
+                        translationY = pos.y * size.height - 12.dp.toPx()
                     }
                     .size(24.dp)
                     .background(ComposeColor.White, CircleShape)

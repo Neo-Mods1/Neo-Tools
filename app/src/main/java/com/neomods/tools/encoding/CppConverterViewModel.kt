@@ -5,7 +5,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.neomods.tools.native.NeoNative
+import com.neomods.tools.encoding.CppConverterUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -92,7 +92,7 @@ class CppConverterViewModel(application: Application) : AndroidViewModel(applica
         viewModelScope.launch {
             _isGenerating.value = true
             val header = withContext(Dispatchers.IO) {
-                runCatching { NeoNative.fileToHeader(bytes, _inputFileName.value) }.getOrNull()
+                runCatching { CppConverterUtils.fileToHeader(bytes, _inputFileName.value) }.getOrNull()
             }
             _isGenerating.value = false
 
@@ -137,10 +137,10 @@ class CppConverterViewModel(application: Application) : AndroidViewModel(applica
         viewModelScope.launch {
             _isDecoding.value = true
             val result = withContext(Dispatchers.IO) {
-                runCatching { NeoNative.headerToFile(header) }.getOrNull()
+                runCatching { CppConverterUtils.headerToFile(header) }.getOrNull()
             }
             val fname = withContext(Dispatchers.IO) {
-                runCatching { NeoNative.headerFileName(header) }.getOrNull()
+                runCatching { CppConverterUtils.headerFileName(header) }.getOrNull()
             }
             _isDecoding.value = false
 

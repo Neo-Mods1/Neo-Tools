@@ -10,7 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.neomods.tools.native.NeoNative
+import com.neomods.tools.apk.ApkParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -178,20 +178,20 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
         // Parse via native
         val nativeJson = try {
             if (app.apkPath.isNotEmpty()) {
-                JSONObject(NeoNative.nativeParseApkInfo(app.apkPath))
+                JSONObject(ApkParser.parseApkInfo(app.apkPath))
             } else JSONObject()
         } catch (e: Exception) { JSONObject() }
 
         val manifestJson = try {
             if (app.apkPath.isNotEmpty()) {
-                val xml = NeoNative.nativeParseManifest(app.apkPath)
+                val xml = ApkParser.parseManifest(app.apkPath)
                 parseManifestComponents(xml)
             } else ManifestParseResult()
         } catch (e: Exception) { ManifestParseResult() }
 
         val certJson = try {
             if (app.apkPath.isNotEmpty()) {
-                JSONArray(NeoNative.nativeParseCertificate(app.apkPath))
+                JSONArray(ApkParser.parseCertificate(app.apkPath))
             } else JSONArray()
         } catch (e: Exception) { JSONArray() }
 
@@ -272,7 +272,7 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
             testOnly = app.testOnly,
             certificates = certs,
             manifestXml = try {
-                if (app.apkPath.isNotEmpty()) NeoNative.nativeGetManifestXml(app.apkPath) else ""
+                if (app.apkPath.isNotEmpty()) ApkParser.getManifestXml(app.apkPath) else ""
             } catch (_: Exception) { "" },
             requestedPermissions = manifestJson.permissions,
             activities = manifestJson.activities,

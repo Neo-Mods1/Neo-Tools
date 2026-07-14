@@ -19,17 +19,9 @@ if (keystorePropertiesFile.exists()) {
 
 val hasKeystore = keystorePropertiesFile.exists()
 
-val abiList =
-    if (gradle.startParameter.taskNames.any { it.contains("Release", true) }) {
-        listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
-    } else {
-        listOf("arm64-v8a")
-    }
-
 android {
     namespace = "com.neomods.tools"
     compileSdk = v.getProperty("compileSdk").toInt()
-    ndkVersion = v.getProperty("ndkVersion")
 
     defaultConfig {
         applicationId = "com.neomods.tools"
@@ -40,17 +32,6 @@ android {
 
         vectorDrawables {
             useSupportLibrary = false
-        }
-
-        ndk {
-            abiFilters += abiList
-        }
-
-        externalNativeBuild {
-            cmake {
-                // Default C++ standard flags; per-target flags live in CMakeLists.txt.
-                cppFlags += "-std=c++17"
-            }
         }
     }
     
@@ -104,13 +85,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
-        }
     }
 
     packaging {

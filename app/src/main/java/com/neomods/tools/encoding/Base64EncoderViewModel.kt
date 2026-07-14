@@ -7,7 +7,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.neomods.tools.native.NeoNative
+import com.neomods.tools.encoding.Base64Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -125,7 +125,7 @@ class Base64EncoderViewModel(application: Application) : AndroidViewModel(applic
                 cacheLock.withLock {
                     cache.getOrPut(sf.uri.toString()) {
                         val bytes = readBytes(sf.uri)
-                        val b64 = NeoNative.encodeBase64(bytes)
+                        val b64 = Base64Utils.encode(bytes)
                         Base64Entry(sf.id, sf.uri, sf.name, sf.mimeType, b64, b64.length)
                     }
                 }

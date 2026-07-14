@@ -7,7 +7,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.neomods.tools.native.NeoNative
+import com.neomods.tools.encoding.Base64Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -61,7 +61,7 @@ class Base64DecoderViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch {
             _isDecoding.value = true
             val decoded = withContext(Dispatchers.IO) {
-                runCatching { NeoNative.decodeBase64(input) }.getOrNull()
+                runCatching { Base64Utils.decode(input) }.getOrNull()
             }
             _isDecoding.value = false
 
