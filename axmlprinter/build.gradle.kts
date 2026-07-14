@@ -1,6 +1,13 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+}
+
+val v = Properties().apply {
+    load(rootProject.file("versions.properties").inputStream())
 }
 
 android {
@@ -9,13 +16,6 @@ android {
 
     defaultConfig {
         minSdk = 21
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
     }
 
     compileOptions {
