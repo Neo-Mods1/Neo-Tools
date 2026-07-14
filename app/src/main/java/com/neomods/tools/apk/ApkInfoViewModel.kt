@@ -45,7 +45,6 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
                     apkPath = ai.sourceDir ?: "",
                     processName = ai.processName,
                     targetSdk = ai.targetSdkVersion,
-                    @Suppress("DEPRECATION")
                     minSdk = ai.minSdkVersion,
                     uid = ai.uid,
                     dataDir = ai.dataDir ?: "",
@@ -141,9 +140,9 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
         filterApps(query)
     }
 
+    @Suppress("DEPRECATION")
     private fun parseApk(app: AppListItem): ApkInfo {
         val pkgInfo = try {
-            @Suppress("DEPRECATION")
             pm.getPackageInfo(app.packageName, PackageManager.GET_SIGNATURES or
                 PackageManager.GET_PERMISSIONS or
                 PackageManager.GET_ACTIVITIES or
