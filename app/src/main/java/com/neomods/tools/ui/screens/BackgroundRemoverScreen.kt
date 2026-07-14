@@ -210,7 +210,7 @@ fun BackgroundRemoverScreen(
                 }
 
                 if (resultBitmap != null && !isProcessing) {
-                    FilledButton(
+                    Button(
                         onClick = {
                             scope.launch(Dispatchers.IO) {
                                 try {

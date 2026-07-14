@@ -32,6 +32,7 @@ import com.neomods.tools.category.CategoryViewModel
 import com.neomods.tools.imageeditor.ImageEditorScreen
 import com.neomods.tools.apk.ApkInfoScreen
 import com.neomods.tools.tools.ToolViewModel
+import com.neomods.tools.ui.screens.BackgroundRemoverScreen
 
 /**
  * Application navigation graph.
