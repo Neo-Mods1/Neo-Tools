@@ -32,3 +32,10 @@
 -keep class mt.modder.hub.axml.** { *; }
 -keep class mt.modder.hub.axmlTools.** { *; }
 -dontwarn mt.modder.hub.**
+
+# Guava transitive dependencies (not included, safe to ignore)
+-dontwarn com.google.j2objc.annotations.**
+-dontwarn org.checkerframework.**
+-dontwarn org.codehaus.mojo.animal_sniffer.**
+-dontwarn javax.annotation.**
+-dontwarn sun.misc.Unsafe
