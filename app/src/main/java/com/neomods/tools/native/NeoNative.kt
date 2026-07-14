@@ -1,5 +1,7 @@
 package com.neomods.tools.native
 
+import android.graphics.Bitmap
+
 /**
  * Thin JNI caller for the native `neotools` library.
  *
@@ -13,45 +15,56 @@ object NeoNative {
         System.loadLibrary("neotools")
     }
 
-    /**
-     * Encode raw bytes to standard Base64.
-     *
-     * @return a single continuous line of Base64 (no line breaks, spaces or
-     *         tabs), suitable for APIs, JSON and decoding.
-     */
+    // ── Encoding ────────────────────────────────────────────────────────
+
     external fun encodeBase64(input: ByteArray): String
-
-    /**
-     * Decode a standard Base64 string back to raw bytes.
-     *
-     * @param input a single continuous line of Base64 text.
-     * @return the decoded raw bytes.
-     */
     external fun decodeBase64(input: String): ByteArray
-
-    /**
-     * Convert raw file bytes to a C++ header (.hpp) string.
-     * Output matches xxd -i format with 16 bytes per line.
-     *
-     * @param data     raw file bytes.
-     * @param filename original file name (e.g. "image.png").
-     * @return the complete .hpp header text.
-     */
     external fun fileToHeader(data: ByteArray, filename: String): String
-
-    /**
-     * Parse a .hpp header and extract the raw byte data.
-     *
-     * @param header the .hpp header text.
-     * @return the decoded raw bytes.
-     */
     external fun headerToFile(header: String): ByteArray
-
-    /**
-     * Extract the file name from a .hpp header.
-     *
-     * @param header the .hpp header text.
-     * @return the file_name value from the header.
-     */
     external fun headerFileName(header: String): String
+
+    // ── Image Editor: Adjustments ───────────────────────────────────────
+
+    external fun nativeAdjustBrightness(bitmap: Bitmap, brightness: Float): Bitmap
+    external fun nativeAdjustContrast(bitmap: Bitmap, contrast: Float): Bitmap
+    external fun nativeAdjustSaturation(bitmap: Bitmap, saturation: Float): Bitmap
+    external fun nativeAdjustExposure(bitmap: Bitmap, exposure: Float): Bitmap
+    external fun nativeAdjustWarmth(bitmap: Bitmap, warmth: Float): Bitmap
+    external fun nativeAdjustHighlights(bitmap: Bitmap, highlights: Float): Bitmap
+    external fun nativeAdjustShadows(bitmap: Bitmap, shadows: Float): Bitmap
+    external fun nativeAdjustSharpness(bitmap: Bitmap, sharpness: Float): Bitmap
+    external fun nativeAdjustVignette(bitmap: Bitmap, vignette: Float): Bitmap
+    external fun nativeAdjustHue(bitmap: Bitmap, hue: Float): Bitmap
+
+    external fun nativeApplyAllAdjustments(
+        bitmap: Bitmap,
+        brightness: Float, contrast: Float, saturation: Float, exposure: Float,
+        warmth: Float, highlights: Float, shadows: Float,
+        sharpness: Float, vignette: Float, hue: Float
+    ): Bitmap
+
+    // ── Image Editor: Crop / Transform ──────────────────────────────────
+
+    external fun nativeCropBitmap(bitmap: Bitmap, x: Int, y: Int, width: Int, height: Int): Bitmap
+    external fun nativeRotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap
+    external fun nativeFlipBitmap(bitmap: Bitmap, horizontal: Boolean): Bitmap
+    external fun nativeResizeBitmap(bitmap: Bitmap, newWidth: Int, newHeight: Int): Bitmap
+
+    // ── Image Editor: Drawing ───────────────────────────────────────────
+
+    external fun nativeRenderStroke(
+        bitmap: Bitmap, points: FloatArray, numPoints: Int,
+        color: Int, strokeWidth: Float, brushType: Int, opacity: Float
+    ): Bitmap
+
+    external fun nativeRenderStrokesBatch(
+        bitmap: Bitmap, allPoints: FloatArray, strokeSizes: IntArray,
+        numStrokes: Int, colors: IntArray, widths: FloatArray,
+        brushTypes: IntArray, opacities: FloatArray
+    ): Bitmap
+
+    // ── Image Editor: Background Removal ────────────────────────────────
+
+    external fun nativeRemoveBackground(bitmap: Bitmap, tolerance: Int, edgeSample: Int): Bitmap
+    external fun nativeRemoveBackgroundByColor(bitmap: Bitmap, targetColor: Int, tolerance: Int): Bitmap
 }

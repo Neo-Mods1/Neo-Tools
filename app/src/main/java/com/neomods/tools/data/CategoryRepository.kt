@@ -40,9 +40,9 @@ internal class DefaultCategoryRepository : CategoryRepository {
         Category(
             id = "image",
             title = "Image Tools",
-            description = "Optimize and convert images",
+            description = "Edit and transform images",
             iconRes = R.drawable.ic_cat_image,
-            tags = listOf("PNG", "SVG", "WebP")
+            tags = listOf("Editor", "Crop", "Draw", "Filters")
         ),
         Category(
             id = "encoding",

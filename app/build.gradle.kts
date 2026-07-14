@@ -141,4 +141,14 @@ dependencies {
 
     // Lottie animations
     implementation(libs.lottie.compose)
+
+    // ── Image Editor ──────────────────────────────────────────────
+    // Image loading (Compose-native)
+    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+
+    // SVG rendering (for sticker/icon assets)
+    implementation("com.caverock:androidsvg-aar:1.4")
+
+    // Palette (extract dominant colors)
+    implementation("androidx.palette:palette-ktx:1.0.0")
 }

@@ -27,6 +27,7 @@ import com.neomods.tools.ui.screens.PlaceholderToolScreen
 import com.neomods.tools.ui.screens.SplashScreen
 import com.neomods.tools.ui.screens.WelcomeIntroScreen
 import com.neomods.tools.category.CategoryViewModel
+import com.neomods.tools.imageeditor.ImageEditorScreen
 import com.neomods.tools.tools.ToolViewModel
 
 /**
@@ -165,6 +166,7 @@ fun NeoNavHost(
                 "dec_base64" -> Base64DecoderScreen(onBack = { navController.popBackStack() })
                 "enc_cpp_header" -> CppHeaderGeneratorScreen(onBack = { navController.popBackStack() })
                 "dec_cpp_header" -> CppHeaderDecoderScreen(onBack = { navController.popBackStack() })
+                "img_editor" -> ImageEditorScreen(onBack = { navController.popBackStack() })
                 else -> {
                     val viewModel: ToolViewModel = viewModel(backStack)
                     PlaceholderToolScreen(

@@ -41,9 +41,7 @@ internal class DefaultToolRepository : ToolRepository {
         ),
         "binary" to listOf(),
         "image" to listOf(
-            Tool("img_optimize", "image", "PNG Optimizer", "Compress PNG assets", R.drawable.ic_tool_image_edit, "Optimize"),
-            Tool("img_convert", "image", "Format Convert", "Convert between image formats", R.drawable.ic_tool_convert, "Convert"),
-            Tool("img_exif", "image", "EXIF Viewer", "Read image metadata", R.drawable.ic_tool_exif, "Metadata")
+            Tool("img_editor", "image", "Image Editor", "Professional image editing with filters, crop, draw, text, stickers and background removal", R.drawable.ic_tool_image_edit, "Editor")
         ),
         "xml" to listOf(),
         "encoding" to listOf(

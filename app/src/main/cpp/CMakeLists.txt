@@ -10,6 +10,10 @@ add_library(
         Main.cpp
         encoding/base64.cpp
         encoding/cpp_converter.cpp
+        imageeditor/adjustments.cpp
+        imageeditor/crop.cpp
+        imageeditor/drawing.cpp
+        imageeditor/bgremove.cpp
 )
 
 find_library(
