@@ -11,11 +11,11 @@ val v = Properties().apply {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = v.getProperty("compileSdk").toInt()
     namespace = "mt.modder.hub.axml"
 
     defaultConfig {
-        minSdk = 21
+        minSdk = v.getProperty("minSdk").toInt()
     }
 
     compileOptions {

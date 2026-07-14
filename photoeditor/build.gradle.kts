@@ -16,7 +16,6 @@ android {
 
     defaultConfig {
         minSdk = v.getProperty("minSdk").toInt()
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -36,12 +35,6 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
-    }
-
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-        }
     }
 }
 
