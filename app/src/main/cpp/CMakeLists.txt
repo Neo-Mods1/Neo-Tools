@@ -15,6 +15,7 @@ add_library(
         imageeditor/drawing.cpp
         imageeditor/bgremove.cpp
         imageeditor/shapes.cpp
+        imageeditor/filters.cpp
 )
 
 find_library(

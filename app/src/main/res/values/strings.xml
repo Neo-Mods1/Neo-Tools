@@ -49,6 +49,9 @@
     <string name="crash_copy">Copy Log</string>
     <string name="crash_restart">Restart App</string>
     <string name="crash_send_report">Send anonymous crash report</string>
+    <string name="crash_sending">Sending crash report…</string>
+    <string name="crash_report_sent">Report sent</string>
+    <string name="crash_report_failed">Report failed: %1$s</string>
 
     <string name="remove">Remove</string>
     <string name="cancel">Cancel</string>
@@ -133,6 +136,10 @@
     <string name="img_editor_export_format">Format</string>
     <string name="img_editor_export_quality">Quality: %d%%</string>
     <string name="img_editor_export_btn">Export</string>
+    <string name="img_editor_filters">Filters</string>
+    <string name="img_editor_curves">Curves</string>
+    <string name="img_editor_eyedropper">Color Picker</string>
+    <string name="img_editor_clone_stamp">Clone Stamp</string>
 
     <string name="back">Back</string>
     <string name="settings">Settings</string>

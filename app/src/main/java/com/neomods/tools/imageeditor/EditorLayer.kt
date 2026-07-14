@@ -135,13 +135,42 @@ data class Adjustments(
 enum class EditorTool {
     SELECT,
     ADJUST,
+    FILTERS,
     CROP,
     DRAW,
     TEXT,
     STICKER,
     SHAPE,
+    EYEDROPPER,
+    CURVES,
+    CLONE_STAMP,
     BG_ERASER,
     LAYERS,
+}
+
+enum class FilterType {
+    GRAYSCALE,
+    SEPIA,
+    INVERT,
+    THRESHOLD,
+    BLUR,
+    PIXELATE,
+    EMBOSS,
+}
+
+enum class BlendMode(val label: String) {
+    NORMAL("Normal"),
+    MULTIPLY("Multiply"),
+    SCREEN("Screen"),
+    OVERLAY("Overlay"),
+    DARKEN("Darken"),
+    LIGHTEN("Lighten"),
+    COLOR_DODGE("Color Dodge"),
+    COLOR_BURN("Color Burn"),
+    SOFT_LIGHT("Soft Light"),
+    HARD_LIGHT("Hard Light"),
+    DIFFERENCE("Difference"),
+    EXCLUSION("Exclusion"),
 }
 
 enum class ShapeType {

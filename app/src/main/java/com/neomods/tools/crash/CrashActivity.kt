@@ -5,6 +5,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Process
 import android.view.View
 import android.widget.Button
@@ -18,10 +20,11 @@ import com.neomods.tools.app.BaseActivity
 /**
  * Screen shown when an uncaught exception is captured by [CrashHandler].
  *
- * Lets the user copy the crash log or restart the app, and (when the user has
- * previously opted in) sends an anonymous report via [CrashReporter].
- *
- * Ported from the CODE-IDE crash system (com.neo.ide.crash.CrashActivity). also owned by me neo mods
+ * Flow:
+ * 1. Setup UI immediately (message, log)
+ * 2. Check prefs — if user opted in, auto-send report
+ * 3. If not opted in, show switch so user can enable sending
+ * 4. When switch toggled ON, send report and update status
  */
 class CrashActivity : BaseActivity() {
 
@@ -29,11 +32,14 @@ class CrashActivity : BaseActivity() {
     private lateinit var scrollView: ScrollView
     private lateinit var reportSwitch: MaterialSwitch
     private lateinit var reportStatus: TextView
+    private val mainHandler = Handler(Looper.getMainLooper())
+
     private var fullLog: String = ""
     private var crashMessage: String = ""
     private var exceptionType: String = ""
     private var stacktrace: String = ""
     private var crashThread: String = ""
+    private var reportSent = false
 
     override fun bindLayout(): View {
         return layoutInflater.inflate(R.layout.activity_crash, null)
@@ -50,6 +56,7 @@ class CrashActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // ── Step 1: Setup UI ──────────────────────────────────────────
         val messageText = findViewById<TextView>(R.id.crash_message)
         val loadingText = findViewById<TextView>(R.id.crash_loading)
         scrollView = findViewById(R.id.crash_scroll_view)
@@ -67,40 +74,53 @@ class CrashActivity : BaseActivity() {
         stacktrace = intent.getStringExtra(EXTRA_STACKTRACE) ?: extractStacktrace(fullLog)
         crashThread = intent.getStringExtra(EXTRA_THREAD) ?: "main"
 
+        logTextView.text = fullLog
+        loadingText.visibility = View.GONE
+
         copyButton.setOnClickListener { copyLogToClipboard() }
         restartButton.setOnClickListener { restartApp() }
 
-        loadingText.visibility = View.GONE
-        logTextView.text = fullLog
+        // ── Step 2: Check prefs and auto-report ──────────────────────
+        reportSwitch.visibility = View.VISIBLE
 
         val optedIn = CrashReporter.isOptedIn(this)
         if (optedIn) {
-            reportSwitch.visibility = View.VISIBLE
+            // User already opted in — auto-send immediately
             reportSwitch.isChecked = true
             sendReport()
         } else {
-            reportSwitch.visibility = View.VISIBLE
+            // Not opted in — show switch, send when user toggles ON
             reportSwitch.isChecked = false
             reportSwitch.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) sendReport()
+                if (isChecked && !reportSent) {
+                    sendReport()
+                }
             }
         }
     }
 
     private fun sendReport() {
         reportStatus.visibility = View.VISIBLE
-        reportStatus.text = "Sending crash report..."
+        reportStatus.text = getString(R.string.crash_sending)
 
-        CrashReporter.reportCrash(
-            this,
-            exceptionType,
-            crashMessage,
-            stacktrace,
-            crashThread,
-            fullLog
-        )
+        Thread {
+            val result = CrashReporter.reportCrashSync(
+                this@CrashActivity,
+                exceptionType,
+                crashMessage,
+                stacktrace,
+                crashThread
+            )
+            reportSent = true
 
-        reportStatus.text = "Report sent"
+            mainHandler.post {
+                if (result.success) {
+                    reportStatus.text = getString(R.string.crash_report_sent)
+                } else {
+                    reportStatus.text = getString(R.string.crash_report_failed, result.message)
+                }
+            }
+        }.start()
     }
 
     private fun extractExceptionType(log: String): String {

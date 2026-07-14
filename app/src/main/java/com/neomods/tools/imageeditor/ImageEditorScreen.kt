@@ -112,6 +112,22 @@ fun ImageEditorScreen(
             } else {
                 EditorCanvas(
                     layers = state.layers,
+                    activeTool = state.activeTool,
+                    isPickingColor = state.isPickingColor,
+                    pickedColor = state.pickedColor,
+                    onTap = { x, y ->
+                        when (state.activeTool) {
+                            EditorTool.EYEDROPPER -> viewModel.pickColor(x, y)
+                            EditorTool.CLONE_STAMP -> {
+                                if (state.isCloning) {
+                                    viewModel.applyCloneStamp(x, y, 64, 64)
+                                } else {
+                                    viewModel.startCloneStamp(x, y)
+                                }
+                            }
+                            else -> {}
+                        }
+                    },
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -179,6 +195,26 @@ fun ImageEditorScreen(
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceContainer)
                     )
+                    EditorTool.FILTERS -> FilterTools(
+                        activeFilter = state.activeFilterType,
+                        onFilterSelected = {
+                            viewModel.selectFilterType(it)
+                            viewModel.applyFilter(it)
+                        },
+                        filterIntensity = 0.5f,
+                        onIntensityChanged = { viewModel.applyFilter(state.activeFilterType, it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                    )
+                    EditorTool.CURVES -> CurvesTools(
+                        lut = state.curvesLut,
+                        onLutChanged = { viewModel.applyCurvesLut(it) },
+                        onReset = { viewModel.resetCurves() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                    )
                     else -> {}
                 }
             }
@@ -242,11 +278,15 @@ private fun EditorToolbar(
     val tools = listOf(
         ToolItem(EditorTool.SELECT, Icons.Default.TouchApp, "Select"),
         ToolItem(EditorTool.ADJUST, Icons.Default.Tune, "Adjust"),
+        ToolItem(EditorTool.FILTERS, Icons.Default.AutoFixHigh, "Filters"),
+        ToolItem(EditorTool.CURVES, Icons.Default.ShowChart, "Curves"),
         ToolItem(EditorTool.CROP, Icons.Default.Crop, "Crop"),
         ToolItem(EditorTool.DRAW, Icons.Default.Brush, "Draw"),
         ToolItem(EditorTool.TEXT, Icons.Default.TextFields, "Text"),
         ToolItem(EditorTool.STICKER, Icons.Default.EmojiEmotions, "Sticker"),
         ToolItem(EditorTool.SHAPE, Icons.Default.Category, "Shape"),
+        ToolItem(EditorTool.EYEDROPPER, Icons.Default.Colorize, "Picker"),
+        ToolItem(EditorTool.CLONE_STAMP, Icons.Default.ContentCopy, "Clone"),
         ToolItem(EditorTool.BG_ERASER, Icons.Default.ContentCut, "BG Eraser"),
         ToolItem(EditorTool.LAYERS, Icons.Default.Layers, "Layers"),
     )

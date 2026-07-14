@@ -60,6 +60,100 @@ class ImageEditorViewModel(app: Application) : AndroidViewModel(app) {
         state = state.copy(activeAdjustType = type)
     }
 
+    fun selectFilterType(type: FilterType) {
+        state = state.copy(activeFilterType = type)
+    }
+
+    // ── Filters (all via JNI) ─────────────────────────────────────────
+
+    fun applyFilter(type: FilterType, intensity: Float = 1f) {
+        val selected = state.selectedLayer as? EditorLayer.Image ?: return
+        pushHistory()
+        viewModelScope.launch(Dispatchers.Default) {
+            val result = when (type) {
+                FilterType.GRAYSCALE -> NeoNative.nativeFilterGrayscale(selected.bitmap)
+                FilterType.SEPIA -> NeoNative.nativeFilterSepia(selected.bitmap, intensity)
+                FilterType.INVERT -> NeoNative.nativeFilterInvert(selected.bitmap)
+                FilterType.THRESHOLD -> NeoNative.nativeFilterThreshold(selected.bitmap, intensity)
+                FilterType.BLUR -> NeoNative.nativeFilterBlur(selected.bitmap, intensity * 10f)
+                FilterType.PIXELATE -> NeoNative.nativeFilterPixelate(selected.bitmap, (8 + intensity * 24).toInt())
+                FilterType.EMBOSS -> NeoNative.nativeFilterEmboss(selected.bitmap, intensity)
+            }
+            withContext(Dispatchers.Main) {
+                updateLayer(selected.copy(bitmap = result))
+            }
+        }
+    }
+
+    // ── Curves (via JNI) ──────────────────────────────────────────────
+
+    fun applyCurvesLut(lut: IntArray) {
+        val selected = state.selectedLayer as? EditorLayer.Image ?: return
+        viewModelScope.launch(Dispatchers.Default) {
+            val result = NeoNative.nativeApplyCurvesLut(selected.bitmap, lut)
+            withContext(Dispatchers.Main) {
+                state = state.copy(curvesLut = lut)
+                updateLayer(selected.copy(bitmap = result))
+            }
+        }
+    }
+
+    fun resetCurves() {
+        state = state.copy(curvesLut = (0..255).toList().toIntArray())
+    }
+
+    // ── Eyedropper (via JNI) ──────────────────────────────────────────
+
+    fun pickColor(x: Int, y: Int) {
+        val selected = state.selectedLayer as? EditorLayer.Image ?: return
+        viewModelScope.launch(Dispatchers.Default) {
+            val color = NeoNative.nativeGetPixelColor(selected.bitmap, x, y)
+            withContext(Dispatchers.Main) {
+                state = state.copy(pickedColor = color, isPickingColor = false)
+            }
+        }
+    }
+
+    fun toggleEyedropper() {
+        state = state.copy(isPickingColor = !state.isPickingColor)
+    }
+
+    // ── Histogram (via JNI) ───────────────────────────────────────────
+
+    fun computeHistogram() {
+        val selected = state.selectedLayer as? EditorLayer.Image ?: return
+        viewModelScope.launch(Dispatchers.Default) {
+            val hist = NeoNative.nativeComputeHistogram(selected.bitmap)
+            withContext(Dispatchers.Main) {
+                state = state.copy(histogram = hist)
+            }
+        }
+    }
+
+    // ── Clone Stamp (via JNI) ─────────────────────────────────────────
+
+    fun startCloneStamp(srcX: Int, srcY: Int) {
+        state = state.copy(isCloning = true, cloneSrcX = srcX, cloneSrcY = srcY)
+    }
+
+    fun applyCloneStamp(dstX: Int, dstY: Int, width: Int, height: Int) {
+        val selected = state.selectedLayer as? EditorLayer.Image ?: return
+        pushHistory()
+        viewModelScope.launch(Dispatchers.Default) {
+            val result = NeoNative.nativeCloneStamp(
+                selected.bitmap, selected.bitmap,
+                state.cloneSrcX, state.cloneSrcY,
+                dstX, dstY,
+                width, height,
+                1f
+            )
+            withContext(Dispatchers.Main) {
+                state = state.copy(isCloning = false)
+                updateLayer(selected.copy(bitmap = result))
+            }
+        }
+    }
+
     // ── Layer selection ────────────────────────────────────────────────
 
     fun selectLayer(layerId: String?) {

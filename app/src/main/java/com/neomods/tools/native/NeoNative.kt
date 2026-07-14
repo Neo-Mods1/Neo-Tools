@@ -77,4 +77,42 @@ object NeoNative {
         shadowRadius: Float, shadowOffsetX: Float, shadowOffsetY: Float,
         triangleDirection: Int, starPoints: Int, starInnerRadius: Float
     ): Bitmap
+
+    // ── Image Editor: Filters ──────────────────────────────────────────
+
+    external fun nativeFilterGrayscale(bitmap: Bitmap): Bitmap
+    external fun nativeFilterSepia(bitmap: Bitmap, intensity: Float): Bitmap
+    external fun nativeFilterInvert(bitmap: Bitmap): Bitmap
+    external fun nativeFilterThreshold(bitmap: Bitmap, threshold: Float): Bitmap
+    external fun nativeFilterBlur(bitmap: Bitmap, radius: Float): Bitmap
+    external fun nativeFilterPixelate(bitmap: Bitmap, blockSize: Int): Bitmap
+    external fun nativeFilterEmboss(bitmap: Bitmap, intensity: Float): Bitmap
+
+    // ── Image Editor: Eyedropper ───────────────────────────────────────
+
+    external fun nativeGetPixelColor(bitmap: Bitmap, x: Int, y: Int): Int
+
+    // ── Image Editor: Histogram ────────────────────────────────────────
+
+    external fun nativeComputeHistogram(bitmap: Bitmap): IntArray
+
+    // ── Image Editor: Curves ───────────────────────────────────────────
+
+    external fun nativeApplyCurvesLut(bitmap: Bitmap, lut: IntArray): Bitmap
+
+    // ── Image Editor: Clone Stamp ──────────────────────────────────────
+
+    external fun nativeCloneStamp(
+        srcBitmap: Bitmap, dstBitmap: Bitmap,
+        srcX: Int, srcY: Int, dstX: Int, dstY: Int,
+        width: Int, height: Int, blendAlpha: Float
+    ): Bitmap
+
+    // ── Image Editor: Blend Modes ──────────────────────────────────────
+
+    external fun nativeBlendBitmaps(base: Bitmap, overlay: Bitmap, mode: Int, opacity: Float): Bitmap
+
+    // ── Native Crash Detection ──────────────────────────────────────────
+
+    external fun nativeCheckCrashFile(): String?
 }

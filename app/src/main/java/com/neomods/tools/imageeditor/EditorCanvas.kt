@@ -2,9 +2,15 @@ package com.neomods.tools.imageeditor
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Colorize
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,13 +20,17 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 
 @Composable
 fun EditorCanvas(
     layers: List<EditorLayer>,
+    activeTool: EditorTool = EditorTool.SELECT,
+    isPickingColor: Boolean = false,
+    pickedColor: Int? = null,
+    onTap: ((x: Int, y: Int) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
@@ -29,10 +39,18 @@ fun EditorCanvas(
     Box(
         modifier = modifier
             .background(Color(0xFF1A1A1A))
-            .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                    scale = (scale * zoom).coerceIn(0.1f, 5f)
-                    offset = Offset(offset.x + pan.x, offset.y + pan.y)
+            .pointerInput(activeTool) {
+                if (activeTool == EditorTool.EYEDROPPER || activeTool == EditorTool.CLONE_STAMP) {
+                    detectTapGestures { press ->
+                        val x = ((press.position.x - offset.x) / scale).roundToInt()
+                        val y = ((press.position.y - offset.y) / scale).roundToInt()
+                        onTap?.invoke(x, y)
+                    }
+                } else {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        scale = (scale * zoom).coerceIn(0.1f, 5f)
+                        offset = Offset(offset.x + pan.x, offset.y + pan.y)
+                    }
                 }
             },
         contentAlignment = Alignment.Center
@@ -138,5 +156,30 @@ fun EditorCanvas(
                         )
                 )
             }
+
+        // Eyedropper indicator
+        if (isPickingColor && activeTool == EditorTool.EYEDROPPER) {
+            Icon(
+                Icons.Default.Colorize,
+                contentDescription = "Eyedropper active",
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .size(32.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        // Picked color indicator
+        if (pickedColor != null && activeTool == EditorTool.EYEDROPPER) {
+            val color = Color(pickedColor)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+                    .size(48.dp)
+                    .background(color, MaterialTheme.shapes.medium)
+            )
+        }
     }
 }
