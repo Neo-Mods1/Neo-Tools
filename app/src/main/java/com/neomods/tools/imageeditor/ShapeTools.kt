@@ -17,71 +17,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.Path
-import androidx.compose.ui.graphics.vector.PathData
-import androidx.compose.ui.graphics.vector.VectorPainter
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private data class ShapeItem(
-    val type: ShapeType,
-    val label: String,
-    val pathData: PathData,
-)
+private data class ShapeItem(val type: ShapeType, val symbol: String, val label: String)
 
 private val shapeItems = listOf(
-    ShapeItem(ShapeType.RECTANGLE, "Rect",
-        PathData { addRect(0f, 0f, 24f, 24f) }),
-    ShapeItem(ShapeType.ROUNDED_RECTANGLE, "Round Rect",
-        PathData { addRoundRect(0f, 0f, 24f, 24f, 4f, 4f) }),
-    ShapeItem(ShapeType.CIRCLE, "Circle",
-        PathData { addOval(0f, 0f, 24f, 24f) }),
-    ShapeItem(ShapeType.OVAL, "Oval",
-        PathData { addOval(0f, 2f, 24f, 22f) }),
-    ShapeItem(ShapeType.TRIANGLE, "Triangle",
-        PathData { moveTo(12f, 0f); lineTo(24f, 24f); lineTo(0f, 24f); close() }),
-    ShapeItem(ShapeType.DIAMOND, "Diamond",
-        PathData { moveTo(12f, 0f); lineTo(24f, 12f); lineTo(12f, 24f); lineTo(0f, 12f); close() }),
-    ShapeItem(ShapeType.STAR, "Star",
-        PathData {
-            moveTo(12f, 0f); lineTo(15f, 9f); lineTo(24f, 9f); lineTo(17f, 15f)
-            lineTo(19f, 24f); lineTo(12f, 18f); lineTo(5f, 24f); lineTo(7f, 15f)
-            lineTo(0f, 9f); lineTo(9f, 9f); close()
-        }),
-    ShapeItem(ShapeType.HEART, "Heart",
-        PathData {
-            moveTo(12f, 22f); cubicTo(12f, 22f, 0f, 16f, 0f, 8f)
-            cubicTo(0f, 3f, 4f, 0f, 8f, 0f); cubicTo(10f, 0f, 12f, 2f, 12f, 4f)
-            cubicTo(12f, 2f, 14f, 0f, 16f, 0f); cubicTo(20f, 0f, 24f, 3f, 24f, 8f)
-            cubicTo(24f, 16f, 12f, 22f, 12f, 22f); close()
-        }),
-    ShapeItem(ShapeType.CROSS, "Cross",
-        PathData {
-            moveTo(8f, 0f); lineTo(16f, 0f); lineTo(16f, 8f); lineTo(24f, 8f)
-            lineTo(24f, 16f); lineTo(16f, 16f); lineTo(16f, 24f); lineTo(8f, 24f)
-            lineTo(8f, 16f); lineTo(0f, 16f); lineTo(0f, 8f); lineTo(8f, 8f); close()
-        }),
-    ShapeItem(ShapeType.ARROW_RIGHT, "Arrow R",
-        PathData {
-            moveTo(0f, 8f); lineTo(14f, 8f); lineTo(14f, 2f); lineTo(24f, 12f)
-            lineTo(14f, 22f); lineTo(14f, 16f); lineTo(0f, 16f); close()
-        }),
-    ShapeItem(ShapeType.ARROW_LEFT, "Arrow L",
-        PathData {
-            moveTo(24f, 8f); lineTo(10f, 8f); lineTo(10f, 2f); lineTo(0f, 12f)
-            lineTo(10f, 22f); lineTo(10f, 16f); lineTo(24f, 16f); close()
-        }),
-    ShapeItem(ShapeType.HEXAGON, "Hexagon",
-        PathData {
-            moveTo(12f, 0f); lineTo(22f, 6f); lineTo(22f, 18f); lineTo(12f, 24f)
-            lineTo(2f, 18f); lineTo(2f, 6f); close()
-        }),
-    ShapeItem(ShapeType.OCTAGON, "Octagon",
-        PathData {
-            moveTo(8f, 0f); lineTo(16f, 0f); lineTo(24f, 8f); lineTo(24f, 16f)
-            lineTo(16f, 24f); lineTo(8f, 24f); lineTo(0f, 16f); lineTo(0f, 8f); close()
-        }),
+    ShapeItem(ShapeType.RECTANGLE, "\u25A1", "Rect"),
+    ShapeItem(ShapeType.ROUNDED_RECTANGLE, "\u25AD", "Round"),
+    ShapeItem(ShapeType.CIRCLE, "\u25CB", "Circle"),
+    ShapeItem(ShapeType.OVAL, "\u25E5", "Oval"),
+    ShapeItem(ShapeType.TRIANGLE, "\u25B3", "Triangle"),
+    ShapeItem(ShapeType.DIAMOND, "\u25C7", "Diamond"),
+    ShapeItem(ShapeType.STAR, "\u2606", "Star"),
+    ShapeItem(ShapeType.HEART, "\u2661", "Heart"),
+    ShapeItem(ShapeType.CROSS, "\u271A", "Cross"),
+    ShapeItem(ShapeType.ARROW_RIGHT, "\u25B6", "Arrow R"),
+    ShapeItem(ShapeType.ARROW_LEFT, "\u25C0", "Arrow L"),
+    ShapeItem(ShapeType.ARROW_UP, "\u25B2", "Arrow U"),
+    ShapeItem(ShapeType.ARROW_DOWN, "\u25BC", "Arrow D"),
+    ShapeItem(ShapeType.HEXAGON, "\u2B21", "Hexagon"),
+    ShapeItem(ShapeType.OCTAGON, "\u2B22", "Octagon"),
+    ShapeItem(ShapeType.OCTAGON_STAR, "\u2736", "8-Star"),
 )
 
 private val shapeColors = listOf(
@@ -116,9 +73,6 @@ fun ShapeTools(
             modifier = Modifier.heightIn(max = 180.dp)
         ) {
             items(shapeItems) { item ->
-                val painter = rememberVectorPainter(24f, 24f) { _, _ ->
-                    Path(item.pathData)
-                }
                 Surface(
                     modifier = Modifier
                         .aspectRatio(1f)
@@ -128,41 +82,10 @@ fun ShapeTools(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
-                    androidx.compose.foundation.Canvas(
-                        modifier = Modifier.padding(6.dp)
-                    ) {
-                        drawPath(
-                            path = androidx.compose.ui.graphics.Path().apply {
-                                // Simple scaled version
-                                val scale = size.minDimension / 24f
-                                val path = androidx.compose.ui.graphics.Path()
-                                // Use vector path approach
-                            },
-                            color = selectedColor
-                        )
-                    }
-                    // Fallback: use icon-style text
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = when (item.type) {
-                                ShapeType.RECTANGLE -> "\u25A1"
-                                ShapeType.ROUNDED_RECTANGLE -> "\u25AD"
-                                ShapeType.CIRCLE -> "\u25CB"
-                                ShapeType.OVAL -> "\u25E5"
-                                ShapeType.TRIANGLE -> "\u25B3"
-                                ShapeType.DIAMOND -> "\u25C7"
-                                ShapeType.STAR -> "\u2606"
-                                ShapeType.HEART -> "\u2661"
-                                ShapeType.CROSS -> "\u271A"
-                                ShapeType.ARROW_RIGHT -> "\u25B6"
-                                ShapeType.ARROW_LEFT -> "\u25C0"
-                                ShapeType.HEXAGON -> "\u2B21"
-                                ShapeType.OCTAGON -> "\u2B22"
-                                ShapeType.ARROW_UP -> "\u25B2"
-                                ShapeType.ARROW_DOWN -> "\u25BC"
-                                ShapeType.OCTAGON_STAR -> "\u2736"
-                            },
-                            fontSize = 24.sp,
+                            text = item.symbol,
+                            fontSize = 28.sp,
                             color = selectedColor
                         )
                     }
