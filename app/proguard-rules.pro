@@ -16,10 +16,9 @@
 -keep class com.neomods.tools.model.** { *; }
 -keep class com.neomods.tools.BuildConfig { *; }
 
-# Crash reporter
+# Crash reporter (Java-only, no native library)
 -keep public class com.neomods.tools.crash.CrashActivity { *; }
 -keep public class com.neomods.tools.crash.CrashHandler { *; }
--keep public class com.neomods.tools.crash.CrashReporter { *; }
 
 # PhotoEditor library (View-based, internal classes accessed via layout XML / reflection)
 -keep class ja.burhanrashid52.photoeditor.** { *; }

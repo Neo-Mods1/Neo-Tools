@@ -21,10 +21,6 @@ object NeoNative {
     external fun headerToFile(header: String): ByteArray
     external fun headerFileName(header: String): String
 
-    // ── Native Crash Detection ──────────────────────────────────────────
-
-    external fun nativeCheckCrashFile(): String?
-
     // ── APK Tools ──────────────────────────────────────────────────────
 
     external fun nativeParseApkInfo(apkPath: String): String
