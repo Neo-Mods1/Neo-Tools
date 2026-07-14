@@ -25,5 +25,5 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    implementation("com.google.guava:guava:32.1.3-android")
 }

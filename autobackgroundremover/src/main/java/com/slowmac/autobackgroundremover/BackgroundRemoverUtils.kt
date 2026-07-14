@@ -39,7 +39,8 @@ class BackgroundRemoverUtils(
 
     companion object Companion {
         private const val TAG = "MLKitBackgroundRemover"
-        private const val CONFIDENCE_THRESHOLD = 0.5f
+        private const val CONFIDENCE_THRESHOLD = 0.3f
+        private const val FEATHER_THRESHOLD = 0.15f
         private const val MAX_IMAGE_DIMENSION = 1024
         private const val MODEL_DOWNLOAD_TIMEOUT_SECONDS = 30
     }
@@ -159,10 +160,14 @@ class BackgroundRemoverUtils(
             val pixels = IntArray(w * h)
             for (i in pixels.indices) {
                 val confidence = mask.get()
-                pixels[i] = if (confidence > CONFIDENCE_THRESHOLD) {
-                    bitmap[i % w, i / w]
-                } else {
-                    Color.TRANSPARENT
+                val srcPixel = bitmap[i % w, i / w]
+                pixels[i] = when {
+                    confidence > CONFIDENCE_THRESHOLD -> srcPixel
+                    confidence > FEATHER_THRESHOLD -> {
+                        val alpha = ((confidence - FEATHER_THRESHOLD) / (CONFIDENCE_THRESHOLD - FEATHER_THRESHOLD) * 255).toInt().coerceIn(0, 255)
+                        (alpha shl 24) or (srcPixel and 0x00FFFFFF)
+                    }
+                    else -> Color.TRANSPARENT
                 }
             }
             val maskedBitmap = Bitmap.createBitmap(pixels, w, h, Bitmap.Config.ARGB_8888)
