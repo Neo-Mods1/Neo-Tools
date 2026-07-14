@@ -224,7 +224,7 @@ private fun AppListItemRow(
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
             )
-        } else Box(
+        } ?: Box(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(12.dp))

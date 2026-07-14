@@ -70,9 +70,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ja.burhanrashid52.photoeditor.PhotoFilter
-import ja.burhanrashid52.photoeditor.ShapeBuilder
-import ja.burhanrashid52.photoeditor.ShapeType
 import ja.burhanrashid52.photoeditor.TextStyleBuilder
+import ja.burhanrashid52.photoeditor.shape.ShapeBuilder
+import ja.burhanrashid52.photoeditor.shape.ShapeType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
