@@ -115,4 +115,13 @@ object NeoNative {
     // ── Native Crash Detection ──────────────────────────────────────────
 
     external fun nativeCheckCrashFile(): String?
+
+    // ── APK Tools ──────────────────────────────────────────────────────
+
+    external fun nativeParseApkInfo(apkPath: String): String
+    external fun nativeParseManifest(apkPath: String): String
+    external fun nativeGetManifestXml(apkPath: String): String
+    external fun nativeParseCertificate(apkPath: String): String
+    external fun nativeGetNativeLibs(apkPath: String): String
+    external fun nativeGetZipEntries(apkPath: String): String
 }

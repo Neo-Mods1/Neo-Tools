@@ -19,6 +19,7 @@
 #include <ucontext.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "obfuscate.h"
 #include "encoding/base64.hpp"
@@ -29,17 +30,13 @@
 #include "imageeditor/bgremove.hpp"
 #include "imageeditor/shapes.hpp"
 #include "imageeditor/filters.hpp"
+#include "apk/apk_parser.hpp"
 
 #ifndef LOG_TAG
 #define LOG_TAG "NeoTools"
 #endif
 
-// ---------------------------------------------------------------------------
-// Native crash signal handler — writes a minidump to a file that the Kotlin
-// side can pick up on next launch and forward to the crash reporter.
-// ---------------------------------------------------------------------------
-
-static struct sigaction old_sa[32];
+static struct sigaction old_sa[NSIG];
 
 static const char* signalName(int sig) {
     switch (sig) {
@@ -52,16 +49,34 @@ static const char* signalName(int sig) {
     }
 }
 
+static std::string getCrashFilePath() {
+    char pkg[256] = {0};
+
+    int fd = open("/proc/self/cmdline", O_RDONLY);
+    if (fd >= 0) {
+        ssize_t len = read(fd, pkg, sizeof(pkg) - 1);
+        close(fd);
+
+        if (len > 0) {
+            pkg[len] = '\0';
+            return std::string("/data/data/") + pkg + "/files/native_crash.txt";
+        }
+    }
+
+    // Fallback
+    return "/data/local/tmp/native_crash.txt";
+}
+
 static void nativeCrashHandler(int sig, siginfo_t* info, void* ucontext) {
     // Restore default handler so a second crash isn't trapped
-    sigaction(sig, &old_sa[sig % 32], nullptr);
+    sigaction(sig, &old_sa[sig], nullptr);
 
     int fd = -1;
 
     // Write crash info to a temp file the Kotlin side will read
-    const char* crashPath = "/data/data/com.neomods.tools/files/native_crash.txt";
+    std::string crashPath = getCrashFilePath();
 
-    fd = open(crashPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    fd = open(crashPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd >= 0) {
         const char* header =
             "========================================\n"
@@ -77,7 +92,7 @@ static void nativeCrashHandler(int sig, siginfo_t* info, void* ucontext) {
 
         // Fault address
         if (info && info->si_addr) {
-            const char* addrLine = "Fault addr: 0x";
+            const char* addrLine = "Fault addr: ";
             write(fd, addrLine, strlen(addrLine));
             char hex[20];
             snprintf(hex, sizeof(hex), "%p", info->si_addr);
@@ -139,7 +154,7 @@ static void nativeCrashHandler(int sig, siginfo_t* info, void* ucontext) {
 
     // Raise the signal again so the process dies normally (and Android's
     // tombstone handler can write the full core dump if needed)
-    raise(sig);
+    tgkill(getpid(), gettid(), sig);
 }
 
 static void installSignalHandlers() {
@@ -151,7 +166,7 @@ static void installSignalHandlers() {
     sigemptyset(&sa.sa_mask);
 
     for (int sig : signals) {
-        sigaction(sig, &sa, &old_sa[sig % 32]);
+        sigaction(sig, &sa, &old_sa[sig]);
     }
 }
 
@@ -354,6 +369,38 @@ int RegisterImageEditor(JNIEnv* env) {
     return JNI_OK;
 }
 
+int RegisterApkTools(JNIEnv* env) {
+    JNINativeMethod methods[] = {
+        { OBFUSCATE("nativeParseApkInfo"),
+          OBFUSCATE("(Ljava/lang/String;)Ljava/lang/String;"),
+          reinterpret_cast<void*>(neotools::apk::ParseApkInfo) },
+        { OBFUSCATE("nativeParseManifest"),
+          OBFUSCATE("(Ljava/lang/String;)Ljava/lang/String;"),
+          reinterpret_cast<void*>(neotools::apk::ParseManifest) },
+        { OBFUSCATE("nativeGetManifestXml"),
+          OBFUSCATE("(Ljava/lang/String;)Ljava/lang/String;"),
+          reinterpret_cast<void*>(neotools::apk::GetManifestXml) },
+        { OBFUSCATE("nativeParseCertificate"),
+          OBFUSCATE("(Ljava/lang/String;)Ljava/lang/String;"),
+          reinterpret_cast<void*>(neotools::apk::ParseCertificate) },
+        { OBFUSCATE("nativeGetNativeLibs"),
+          OBFUSCATE("(Ljava/lang/String;)Ljava/lang/String;"),
+          reinterpret_cast<void*>(neotools::apk::GetNativeLibs) },
+        { OBFUSCATE("nativeGetZipEntries"),
+          OBFUSCATE("(Ljava/lang/String;)Ljava/lang/String;"),
+          reinterpret_cast<void*>(neotools::apk::GetZipEntries) },
+    };
+
+    jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));
+    if (clazz == nullptr) {
+        return JNI_ERR;
+    }
+    if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0) {
+        return JNI_ERR;
+    }
+    return JNI_OK;
+}
+
 extern "C"
 JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM* vm, void* /* reserved */) {
@@ -379,6 +426,11 @@ JNI_OnLoad(JavaVM* vm, void* /* reserved */) {
     if (RegisterImageEditor(env) != JNI_OK) {
         __android_log_print(ANDROID_LOG_WARN, LOG_TAG,
             "ImageEditor native registration failed");
+    }
+
+    if (RegisterApkTools(env) != JNI_OK) {
+        __android_log_print(ANDROID_LOG_WARN, LOG_TAG,
+            "ApkTools native registration failed");
     }
 
     return JNI_VERSION_1_6;

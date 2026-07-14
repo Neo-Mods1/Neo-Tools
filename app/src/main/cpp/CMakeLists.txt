@@ -5,17 +5,18 @@ project("neotools")
 # Each tool category lives in its own folder and is added here. The root
 # Main.cpp includes the per-category headers and registers their natives.
 add_library(
-        neotools
-        SHARED
-        Main.cpp
-        encoding/base64.cpp
-        encoding/cpp_converter.cpp
-        imageeditor/adjustments.cpp
-        imageeditor/crop.cpp
-        imageeditor/drawing.cpp
-        imageeditor/bgremove.cpp
-        imageeditor/shapes.cpp
-        imageeditor/filters.cpp
+    neotools
+    SHARED
+    Main.cpp
+    encoding/base64.cpp
+    encoding/cpp_converter.cpp
+    imageeditor/adjustments.cpp
+    imageeditor/crop.cpp
+    imageeditor/drawing.cpp
+    imageeditor/bgremove.cpp
+    imageeditor/shapes.cpp
+    imageeditor/filters.cpp
+    apk/apk_parser.cpp
 )
 
 find_library(

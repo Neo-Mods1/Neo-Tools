@@ -141,6 +141,14 @@
     <string name="img_editor_eyedropper">Color Picker</string>
     <string name="img_editor_clone_stamp">Clone Stamp</string>
 
+    <!-- ===== APK Info strings ===== -->
+    <string name="apk_info_title">APK Info</string>
+    <string name="apk_info_search">Search apps…</string>
+    <string name="apk_info_parsing">Parsing…</string>
+    <string name="apk_info_no_apps">No apps found</string>
+    <string name="apk_info_view_manifest">View Manifest</string>
+    <string name="apk_info_copy_xml">Copy XML</string>
+
     <string name="back">Back</string>
     <string name="settings">Settings</string>
     <string name="about">About</string>
