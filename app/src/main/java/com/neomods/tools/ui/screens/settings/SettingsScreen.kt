@@ -22,6 +22,7 @@ import com.neomods.tools.R
 import com.neomods.tools.storage.SettingsManager
 import com.neomods.tools.theme.ThemeMode
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -187,8 +188,14 @@ fun SettingsScreen(
                                         settingsManager.setUiScale(newScale)
                                     }
                                 },
+                                onValueChangeFinished = {
+                                    // Snap to nearest 12.5% step
+                                    scope.launch {
+                                        val snapped = (uiScale * 8).roundToInt() / 8f
+                                        settingsManager.setUiScale(snapped.coerceIn(0.75f, 1.5f))
+                                    }
+                                },
                                 valueRange = 0.75f..1.5f,
-                                steps = 5,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(start = 28.dp)
