@@ -69,6 +69,7 @@ fun LayerPanel(
                                 is EditorLayer.Text -> Icons.Default.TextFields
                                 is EditorLayer.Sticker -> Icons.Default.EmojiEmotions
                                 is EditorLayer.Drawing -> Icons.Default.Brush
+                                is EditorLayer.Shape -> Icons.Default.Category
                             },
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
@@ -84,6 +85,7 @@ fun LayerPanel(
                                 is EditorLayer.Text -> layer.text.take(20)
                                 is EditorLayer.Sticker -> "Sticker"
                                 is EditorLayer.Drawing -> "Drawing"
+                                is EditorLayer.Shape -> layer.shapeType.name.lowercase().replaceFirstChar { it.uppercase() }
                             },
                             style = MaterialTheme.typography.bodyMedium,
                             maxLines = 1,

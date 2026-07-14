@@ -262,6 +262,60 @@ class ImageEditorViewModel(app: Application) : AndroidViewModel(app) {
         )
     }
 
+    // ── Shape layer (rendered via JNI) ─────────────────────────────────
+
+    fun addShape(
+        shapeType: ShapeType,
+        fillColor: androidx.compose.ui.graphics.Color,
+        strokeWidth: Float,
+        cornerRadius: Float,
+        hasShadow: Boolean
+    ) {
+        val size = 300
+        val fillArgb = android.graphics.Color.argb(
+            (fillColor.alpha * 255).toInt(),
+            (fillColor.red * 255).toInt(),
+            (fillColor.green * 255).toInt(),
+            (fillColor.blue * 255).toInt()
+        )
+
+        viewModelScope.launch(Dispatchers.Default) {
+            val baseBitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val rendered = NeoNative.nativeRenderShape(
+                baseBitmap,
+                shapeType.ordinal,
+                size, size,
+                fillArgb,
+                0, // no stroke color
+                strokeWidth,
+                cornerRadius,
+                hasShadow,
+                android.graphics.Color.argb(128, 0, 0, 0),
+                8f, 4f, 4f,
+                0, 5, 0.4f
+            )
+
+            val layer = EditorLayer.Shape(
+                id = UUID.randomUUID().toString(),
+                shapeType = shapeType,
+                width = size,
+                height = size,
+                fillColor = fillColor,
+                strokeWidth = strokeWidth,
+                cornerRadius = cornerRadius,
+                hasShadow = hasShadow,
+                renderedBitmap = rendered
+            )
+
+            withContext(Dispatchers.Main) {
+                state = state.copy(
+                    layers = state.layers + layer,
+                    selectedLayerId = layer.id
+                )
+            }
+        }
+    }
+
     // ── Layer management ───────────────────────────────────────────────
 
     private fun updateLayer(layer: EditorLayer) {
@@ -279,6 +333,7 @@ class ImageEditorViewModel(app: Application) : AndroidViewModel(app) {
                 is EditorLayer.Text -> layer.copy(position = IntOffset(current.x + offset.x, current.y + offset.y))
                 is EditorLayer.Sticker -> layer.copy(position = IntOffset(current.x + offset.x, current.y + offset.y))
                 is EditorLayer.Drawing -> layer.copy(position = IntOffset(current.x + offset.x, current.y + offset.y))
+                is EditorLayer.Shape -> layer.copy(position = IntOffset(current.x + offset.x, current.y + offset.y))
             }
         )
     }
@@ -291,6 +346,7 @@ class ImageEditorViewModel(app: Application) : AndroidViewModel(app) {
                 is EditorLayer.Text -> layer.copy(isVisible = !layer.isVisible)
                 is EditorLayer.Sticker -> layer.copy(isVisible = !layer.isVisible)
                 is EditorLayer.Drawing -> layer.copy(isVisible = !layer.isVisible)
+                is EditorLayer.Shape -> layer.copy(isVisible = !layer.isVisible)
             }
         )
     }
@@ -303,6 +359,7 @@ class ImageEditorViewModel(app: Application) : AndroidViewModel(app) {
                 is EditorLayer.Text -> layer.copy(isLocked = !layer.isLocked)
                 is EditorLayer.Sticker -> layer.copy(isLocked = !layer.isLocked)
                 is EditorLayer.Drawing -> layer.copy(isLocked = !layer.isLocked)
+                is EditorLayer.Shape -> layer.copy(isLocked = !layer.isLocked)
             }
         )
     }
@@ -321,6 +378,7 @@ class ImageEditorViewModel(app: Application) : AndroidViewModel(app) {
             is EditorLayer.Text -> layer.copy(id = UUID.randomUUID().toString(), position = IntOffset(layer.position.x + 20, layer.position.y + 20))
             is EditorLayer.Sticker -> layer.copy(id = UUID.randomUUID().toString(), position = IntOffset(layer.position.x + 20, layer.position.y + 20))
             is EditorLayer.Drawing -> layer.copy(id = UUID.randomUUID().toString())
+            is EditorLayer.Shape -> layer.copy(id = UUID.randomUUID().toString(), position = IntOffset(layer.position.x + 20, layer.position.y + 20))
         }
         val idx = state.layers.indexOf(layer)
         state = state.copy(layers = state.layers.toMutableList().apply { add(idx + 1, duplicate) })
@@ -346,6 +404,7 @@ class ImageEditorViewModel(app: Application) : AndroidViewModel(app) {
                 is EditorLayer.Text -> layer.copy()
                 is EditorLayer.Sticker -> layer.copy()
                 is EditorLayer.Drawing -> layer.copy(paths = layer.paths.toMutableList())
+                is EditorLayer.Shape -> layer.copy()
             }
         }
         val newHistory = state.history.subList(0, state.historyIndex + 1).toMutableList()
@@ -444,6 +503,14 @@ class ImageEditorViewModel(app: Application) : AndroidViewModel(app) {
                             alpha = (layer.opacity * 255).toInt()
                         }
                         canvas.drawBitmap(layer.bitmap, 0f, 0f, paint)
+                    }
+                }
+                is EditorLayer.Shape -> {
+                    if (layer.renderedBitmap != null) {
+                        val paint = android.graphics.Paint().apply {
+                            alpha = (layer.opacity * 255).toInt()
+                        }
+                        canvas.drawBitmap(layer.renderedBitmap, layer.position.x.toFloat(), layer.position.y.toFloat(), paint)
                     }
                 }
             }

@@ -20,6 +20,7 @@
 #include "imageeditor/crop.hpp"
 #include "imageeditor/drawing.hpp"
 #include "imageeditor/bgremove.hpp"
+#include "imageeditor/shapes.hpp"
 
 #ifndef LOG_TAG
 #define LOG_TAG "NeoTools"
@@ -130,6 +131,10 @@ int RegisterImageEditor(JNIEnv* env) {
         { OBFUSCATE("nativeRemoveBackgroundByColor"),
           OBFUSCATE("(Landroid/graphics/Bitmap;II)Landroid/graphics/Bitmap;"),
           reinterpret_cast<void*>(neotools::imageeditor::RemoveBackgroundByColor) },
+        // Shapes
+        { OBFUSCATE("nativeRenderShape"),
+          OBFUSCATE("(Landroid/graphics/Bitmap;IIIIFFFZIFIIIIIF)Landroid/graphics/Bitmap;"),
+          reinterpret_cast<void*>(neotools::imageeditor::RenderShape) },
     };
 
     jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));

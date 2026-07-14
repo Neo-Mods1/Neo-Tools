@@ -196,6 +196,7 @@ jobject RenderStrokesBatch(JNIEnv* env, jobject /* thiz */, jobject bitmap,
     jint* sizes = env->GetIntArrayElements(strokeSizes, nullptr);
     jint* cols = env->GetIntArrayElements(colors, nullptr);
     jfloat* wds = env->GetFloatArrayElements(widths, nullptr);
+    jint* bts = env->GetIntArrayElements(brushTypes, nullptr);
     jfloat* ops = env->GetFloatArrayElements(opacities, nullptr);
 
     auto* px = static_cast<uint32_t*>(info.pixels);
@@ -217,12 +218,12 @@ jobject RenderStrokesBatch(JNIEnv* env, jobject /* thiz */, jobject bitmap,
             drawLine(px, info.width, info.height,
                      pts[offset + i * 2], pts[offset + i * 2 + 1],
                      pts[offset + (i + 1) * 2], pts[offset + (i + 1) * 2 + 1],
-                     radius, r, g, b, a, brushTypes[s]);
+                     radius, r, g, b, a, bts[s]);
         }
         if (nPts == 1) {
             drawCircle(px, info.width, info.height,
                        static_cast<int>(pts[offset]), static_cast<int>(pts[offset + 1]),
-                       radius, r, g, b, a, brushTypes[s]);
+                       radius, r, g, b, a, bts[s]);
         }
 
         offset += nPts * 2;
@@ -232,6 +233,7 @@ jobject RenderStrokesBatch(JNIEnv* env, jobject /* thiz */, jobject bitmap,
     env->ReleaseIntArrayElements(strokeSizes, sizes, JNI_ABORT);
     env->ReleaseIntArrayElements(colors, cols, JNI_ABORT);
     env->ReleaseFloatArrayElements(widths, wds, JNI_ABORT);
+    env->ReleaseIntArrayElements(brushTypes, bts, JNI_ABORT);
     env->ReleaseFloatArrayElements(opacities, ops, JNI_ABORT);
 
     unlock(env, bitmap);

@@ -117,5 +117,26 @@ fun EditorCanvas(
                         )
                 )
             }
+
+        // Shape layers
+        layers
+            .filterIsInstance<EditorLayer.Shape>()
+            .filter { it.isVisible && it.renderedBitmap != null }
+            .forEach { layer ->
+                Image(
+                    bitmap = layer.renderedBitmap!!.asImageBitmap(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .graphicsLayer(
+                            scaleX = scale * layer.scale,
+                            scaleY = scale * layer.scale,
+                            rotationZ = layer.rotation,
+                            translationX = offset.x + layer.position.x,
+                            translationY = offset.y + layer.position.y,
+                            alpha = layer.opacity
+                        )
+                )
+            }
     }
 }

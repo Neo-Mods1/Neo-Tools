@@ -67,4 +67,14 @@ object NeoNative {
 
     external fun nativeRemoveBackground(bitmap: Bitmap, tolerance: Int, edgeSample: Int): Bitmap
     external fun nativeRemoveBackgroundByColor(bitmap: Bitmap, targetColor: Int, tolerance: Int): Bitmap
+
+    // ── Image Editor: Shapes ───────────────────────────────────────────
+
+    external fun nativeRenderShape(
+        bitmap: Bitmap, shapeType: Int, width: Int, height: Int,
+        fillColor: Int, strokeColor: Int, strokeWidth: Float,
+        cornerRadius: Float, hasShadow: Boolean, shadowColor: Int,
+        shadowRadius: Float, shadowOffsetX: Float, shadowOffsetY: Float,
+        triangleDirection: Int, starPoints: Int, starInnerRadius: Float
+    ): Bitmap
 }

@@ -6,16 +6,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.IntOffset
 
-sealed class EditorLayer(
-    val id: String,
-    val name: String,
-    val position: IntOffset = IntOffset.Zero,
-    val scale: Float = 1f,
-    val rotation: Float = 0f,
-    val opacity: Float = 1f,
-    val isVisible: Boolean = true,
-    val isLocked: Boolean = false,
-) {
+sealed class EditorLayer {
+    abstract val id: String
+    abstract val name: String
+    abstract val position: IntOffset
+    abstract val scale: Float
+    abstract val rotation: Float
+    abstract val opacity: Float
+    abstract val isVisible: Boolean
+    abstract val isLocked: Boolean
+
     data class Image(
         override val id: String,
         val bitmap: Bitmap,
@@ -27,7 +27,8 @@ sealed class EditorLayer(
         override val opacity: Float = 1f,
         override val isVisible: Boolean = true,
         override val isLocked: Boolean = false,
-    ) : EditorLayer(id, "Image", position, scale, rotation, opacity, isVisible, isLocked) {
+    ) : EditorLayer() {
+        override val name: String get() = "Image"
         val imageBitmap get() = bitmap.asImageBitmap()
     }
 
@@ -49,7 +50,9 @@ sealed class EditorLayer(
         override val opacity: Float = 1f,
         override val isVisible: Boolean = true,
         override val isLocked: Boolean = false,
-    ) : EditorLayer(id, "Text", position, scale, rotation, opacity, isVisible, isLocked)
+    ) : EditorLayer() {
+        override val name: String get() = "Text"
+    }
 
     data class Sticker(
         override val id: String,
@@ -61,7 +64,9 @@ sealed class EditorLayer(
         override val opacity: Float = 1f,
         override val isVisible: Boolean = true,
         override val isLocked: Boolean = false,
-    ) : EditorLayer(id, "Sticker", position, scale, rotation, opacity, isVisible, isLocked)
+    ) : EditorLayer() {
+        override val name: String get() = "Sticker"
+    }
 
     data class Drawing(
         override val id: String,
@@ -73,7 +78,37 @@ sealed class EditorLayer(
         override val opacity: Float = 1f,
         override val isVisible: Boolean = true,
         override val isLocked: Boolean = false,
-    ) : EditorLayer(id, "Drawing", position, scale, rotation, opacity, isVisible, isLocked)
+    ) : EditorLayer() {
+        override val name: String get() = "Drawing"
+    }
+
+    data class Shape(
+        override val id: String,
+        val shapeType: ShapeType = ShapeType.RECTANGLE,
+        val width: Int = 200,
+        val height: Int = 200,
+        val fillColor: Color = Color.White,
+        val strokeColor: Color = Color.Transparent,
+        val strokeWidth: Float = 0f,
+        val cornerRadius: Float = 0f,
+        val hasShadow: Boolean = false,
+        val shadowColor: Color = Color.Black.copy(alpha = 0.5f),
+        val shadowRadius: Float = 8f,
+        val shadowOffsetX: Float = 4f,
+        val shadowOffsetY: Float = 4f,
+        val triangleDirection: TriangleDirection = TriangleDirection.UP,
+        val starPoints: Int = 5,
+        val starInnerRadius: Float = 0.4f,
+        val renderedBitmap: Bitmap? = null,
+        override val position: IntOffset = IntOffset(100, 100),
+        override val scale: Float = 1f,
+        override val rotation: Float = 0f,
+        override val opacity: Float = 1f,
+        override val isVisible: Boolean = true,
+        override val isLocked: Boolean = false,
+    ) : EditorLayer() {
+        override val name: String get() = "Shape"
+    }
 }
 
 data class DrawingPath(
@@ -104,8 +139,32 @@ enum class EditorTool {
     DRAW,
     TEXT,
     STICKER,
-    LAYERS,
+    SHAPE,
     BG_ERASER,
+    LAYERS,
+}
+
+enum class ShapeType {
+    RECTANGLE,
+    ROUNDED_RECTANGLE,
+    CIRCLE,
+    OVAL,
+    TRIANGLE,
+    STAR,
+    DIAMOND,
+    ARROW_RIGHT,
+    ARROW_LEFT,
+    ARROW_UP,
+    ARROW_DOWN,
+    HEXAGON,
+    OCTAGON,
+    HEART,
+    CROSS,
+    OCTAGON_STAR,
+}
+
+enum class TriangleDirection {
+    UP, DOWN, LEFT, RIGHT
 }
 
 enum class AdjustType {

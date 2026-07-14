@@ -6,11 +6,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -19,19 +21,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.neomods.tools.R
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,12 +79,6 @@ fun ImageEditorScreen(
                 )
             )
         },
-        bottomBar = {
-            EditorBottomBar(
-                activeTool = state.activeTool,
-                onToolSelected = { viewModel.selectTool(it) }
-            )
-        },
         containerColor = MaterialTheme.colorScheme.surface
     ) { padding ->
         Box(
@@ -100,7 +87,6 @@ fun ImageEditorScreen(
                 .padding(padding)
         ) {
             if (state.layers.isEmpty() && imageUri == null) {
-                // Empty state - prompt to pick image
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -124,14 +110,13 @@ fun ImageEditorScreen(
                     }
                 }
             } else {
-                // Editor canvas
                 EditorCanvas(
                     layers = state.layers,
                     modifier = Modifier.fillMaxSize()
                 )
             }
 
-            // Tool panel (slides up from bottom)
+            // Tool panel (slides up from bottom, above toolbar)
             AnimatedVisibility(
                 visible = state.activeTool != EditorTool.SELECT && state.activeTool != EditorTool.LAYERS,
                 enter = slideInVertically(initialOffsetY = { it }),
@@ -180,6 +165,14 @@ fun ImageEditorScreen(
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceContainer)
                     )
+                    EditorTool.SHAPE -> ShapeTools(
+                        onAddShape = { type, color, stroke, corner, shadow ->
+                            viewModel.addShape(type, color, stroke, corner, shadow)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                    )
                     EditorTool.BG_ERASER -> BgEraserTools(
                         onRemoveBackground = { tolerance -> viewModel.removeBackground(tolerance) },
                         modifier = Modifier
@@ -222,58 +215,83 @@ fun ImageEditorScreen(
                 )
             }
 
-            // Loading indicator
             if (state.isExporting) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
+
+            // Horizontal scrollable toolbar at the very bottom
+            EditorToolbar(
+                activeTool = state.activeTool,
+                onToolSelected = { viewModel.selectTool(it) },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
     }
 }
 
 @Composable
-private fun EditorBottomBar(
+private fun EditorToolbar(
     activeTool: EditorTool,
-    onToolSelected: (EditorTool) -> Unit
+    onToolSelected: (EditorTool) -> Unit,
+    modifier: Modifier = Modifier
 ) {
+    data class ToolItem(val tool: EditorTool, val icon: ImageVector, val label: String)
+
     val tools = listOf(
-        EditorTool.SELECT to "Select",
-        EditorTool.ADJUST to "Adjust",
-        EditorTool.CROP to "Crop",
-        EditorTool.DRAW to "Draw",
-        EditorTool.TEXT to "Text",
-        EditorTool.STICKER to "Sticker",
-        EditorTool.BG_ERASER to "BG Eraser",
-        EditorTool.LAYERS to "Layers",
+        ToolItem(EditorTool.SELECT, Icons.Default.TouchApp, "Select"),
+        ToolItem(EditorTool.ADJUST, Icons.Default.Tune, "Adjust"),
+        ToolItem(EditorTool.CROP, Icons.Default.Crop, "Crop"),
+        ToolItem(EditorTool.DRAW, Icons.Default.Brush, "Draw"),
+        ToolItem(EditorTool.TEXT, Icons.Default.TextFields, "Text"),
+        ToolItem(EditorTool.STICKER, Icons.Default.EmojiEmotions, "Sticker"),
+        ToolItem(EditorTool.SHAPE, Icons.Default.Category, "Shape"),
+        ToolItem(EditorTool.BG_ERASER, Icons.Default.ContentCut, "BG Eraser"),
+        ToolItem(EditorTool.LAYERS, Icons.Default.Layers, "Layers"),
     )
 
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 0.dp
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        tonalElevation = 2.dp,
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
     ) {
-        tools.forEach { (tool, label) ->
-            NavigationBarItem(
-                selected = activeTool == tool,
-                onClick = { onToolSelected(tool) },
-                icon = {
+        Row(
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            tools.forEach { item ->
+                val isActive = activeTool == item.tool
+                val bgColor = if (isActive) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceVariant
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(bgColor)
+                        .clickable { onToolSelected(item.tool) }
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                ) {
                     Icon(
-                        when (tool) {
-                            EditorTool.SELECT -> Icons.Default.TouchApp
-                            EditorTool.ADJUST -> Icons.Default.Tune
-                            EditorTool.CROP -> Icons.Default.Crop
-                            EditorTool.DRAW -> Icons.Default.Brush
-                            EditorTool.TEXT -> Icons.Default.TextFields
-                            EditorTool.STICKER -> Icons.Default.EmojiEmotions
-                            EditorTool.BG_ERASER -> Icons.Default.ContentCut
-                            EditorTool.LAYERS -> Icons.Default.Layers
-                        },
-                        contentDescription = label,
-                        modifier = Modifier.size(20.dp)
+                        item.icon,
+                        contentDescription = item.label,
+                        modifier = Modifier.size(22.dp),
+                        tint = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer
+                        else MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                },
-                label = { Text(label, fontSize = 10.sp) }
-            )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        item.label,
+                        fontSize = 10.sp,
+                        color = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer
+                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }
