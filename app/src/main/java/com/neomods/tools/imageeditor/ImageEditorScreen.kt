@@ -81,6 +81,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import java.io.FileOutputStream
 import androidx.compose.ui.unit.sp
 import ja.burhanrashid52.photoeditor.PhotoEditor
 import ja.burhanrashid52.photoeditor.SaveSettings
@@ -616,17 +617,15 @@ private fun ToolChip(
     val fg = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
     else MaterialTheme.colorScheme.onSecondaryContainer
 
-    Row(
+    Box(
         modifier = Modifier
+            .size(40.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(bg)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription = label, tint = fg, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(4.dp))
-        Text(label, color = fg, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+        Icon(icon, contentDescription = label, tint = fg, modifier = Modifier.size(20.dp))
     }
 }
 
