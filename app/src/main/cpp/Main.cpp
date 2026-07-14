@@ -212,38 +212,6 @@ int RegisterCppConverter(JNIEnv* env) {
 
 } // namespace
 
-// Check for a native crash file written by the signal handler.
-// Returns the crash log content as a Java String, or null if no crash occurred.
-static jstring checkNativeCrashFile(JNIEnv* env, jobject /* this */) {
-    const char* crashPath = "/data/data/com.neomods.tools/files/native_crash.txt";
-    int fd = open(crashPath, O_RDONLY);
-    if (fd < 0) return nullptr;
-
-    struct stat st;
-    if (fstat(fd, &st) != 0 || st.st_size == 0) {
-        close(fd);
-        unlink(crashPath);
-        return nullptr;
-    }
-
-    // Cap at 64KB
-    size_t len = (st.st_size > 65536) ? 65536 : (size_t)st.st_size;
-    char* buf = new char[len + 1];
-    ssize_t bytesRead = read(fd, buf, len);
-    close(fd);
-    unlink(crashPath);
-
-    if (bytesRead <= 0) {
-        delete[] buf;
-        return nullptr;
-    }
-    buf[bytesRead] = '\0';
-
-    jstring result = env->NewStringUTF(buf);
-    delete[] buf;
-    return result;
-}
-
 int RegisterImageEditor(JNIEnv* env) {
     JNINativeMethod methods[] = {
         // Adjustments
@@ -353,10 +321,6 @@ int RegisterImageEditor(JNIEnv* env) {
         { OBFUSCATE("nativeBlendBitmaps"),
           OBFUSCATE("(Landroid/graphics/Bitmap;Landroid/graphics/Bitmap;IF)Landroid/graphics/Bitmap;"),
           reinterpret_cast<void*>(neotools::imageeditor::BlendBitmaps) },
-        // Native crash file check
-        { OBFUSCATE("nativeCheckCrashFile"),
-          OBFUSCATE("()Ljava/lang/String;"),
-          reinterpret_cast<void*>(checkNativeCrashFile) },
     };
 
     jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));

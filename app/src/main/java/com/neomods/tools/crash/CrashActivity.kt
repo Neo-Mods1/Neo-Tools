@@ -56,6 +56,11 @@ class CrashActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Clear crash-loop flag so CrashHandler can show CrashActivity again
+        // if a NEW crash occurs later.
+        getSharedPreferences("crash_handler", Context.MODE_PRIVATE)
+            .edit().putBoolean("is_crashing", false).apply()
+
         // ── Step 1: Setup UI ──────────────────────────────────────────
         val messageText = findViewById<TextView>(R.id.crash_message)
         val loadingText = findViewById<TextView>(R.id.crash_loading)

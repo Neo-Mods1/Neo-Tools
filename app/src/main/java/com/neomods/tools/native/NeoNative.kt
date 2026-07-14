@@ -112,10 +112,6 @@ object NeoNative {
 
     external fun nativeBlendBitmaps(base: Bitmap, overlay: Bitmap, mode: Int, opacity: Float): Bitmap
 
-    // ── Native Crash Detection ──────────────────────────────────────────
-
-    external fun nativeCheckCrashFile(): String?
-
     // ── APK Tools ──────────────────────────────────────────────────────
 
     external fun nativeParseApkInfo(apkPath: String): String
