@@ -195,12 +195,6 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
 
         // Extract features
         val features = mutableListOf<String>()
-        if (Build.VERSION.SDK_INT >= 24) {
-            val configs = pkgInfo.reqConfigurations
-            if (configs != null) {
-                // features are in reqFeatures
-            }
-        }
         try {
             val featArray = pkgInfo.reqFeatures
             if (featArray != null) {
@@ -255,11 +249,7 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
             hasV3Signing = nativeJson.optBoolean("hasV3Signing", false),
             debuggable = app.debuggable,
             allowBackup = app.allowBackup,
-            usesCleartext = try {
-                if (Build.VERSION.SDK_INT >= 23) {
-                    (app.applicationInfo?.flags ?: 0) and android.content.pm.ApplicationInfo.FLAG_USES_CLEARTEXT_TRAFFIC != 0
-                } else false
-            } catch (_: Exception) { false },
+            usesCleartext = false,
             extractNativeLibs = app.extractNativeLibs,
             testOnly = app.testOnly,
             certificates = certs,
@@ -282,7 +272,8 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
 
         // Parse permissions
         val permPattern = Regex("""uses-permission[^>]*name="([^"]+)"""")
-        result.permissions = permPattern.findAll(xml).map { it.groupValues[1] }.toMutableList()
+        result.permissions.clear()
+        result.permissions.addAll(permPattern.findAll(xml).map { it.groupValues[1] }.toList())
 
         // Parse activities
         val actPattern = Regex("""<activity\s[^>]*name="([^"]+)"[^>]*>""")

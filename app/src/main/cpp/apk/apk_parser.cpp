@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <cstdint>
 #include <algorithm>
 #include <zlib.h>
 #include <ctime>
@@ -520,7 +521,7 @@ static CertInfo parseX509Cert(const uint8_t* certData, size_t certLen) {
     size_t serialLen;
     if (cur.enter(0x02, serialLen)) {
         std::vector<uint8_t> serial(serialLen);
-        memcpy(serial.data(), cur.pos, serialLen);
+        memcpy(serial.data(), cur.data + cur.pos, serialLen);
         cur.skip(serialLen);
         // Remove leading zeros
         size_t start = 0;
@@ -542,7 +543,7 @@ static CertInfo parseX509Cert(const uint8_t* certData, size_t certLen) {
     // issuer
     size_t issuerLen;
     if (cur.enter(0x30, issuerLen)) {
-        info.issuer = parseRdnSequence(cur.pos, issuerLen);
+        info.issuer = parseRdnSequence(cur.data + cur.pos, issuerLen);
         cur.skip(issuerLen);
     }
 
@@ -553,20 +554,20 @@ static CertInfo parseX509Cert(const uint8_t* certData, size_t certLen) {
         // notBefore
         if (cur.readTag(tag, tagLen)) {
             if (tag == 0x17) { // UTCTime
-                info.notBefore = parseUtcTime(cur.pos, tagLen);
+                info.notBefore = parseUtcTime(cur.data + cur.pos, tagLen);
                 cur.skip(tagLen);
             } else if (tag == 0x18) { // GeneralizedTime
-                info.notBefore = std::string((const char*)cur.pos, tagLen);
+                info.notBefore = std::string((const char*)(cur.data + cur.pos), tagLen);
                 cur.skip(tagLen);
             }
         }
         // notAfter
         if (cur.readTag(tag, tagLen)) {
             if (tag == 0x17) {
-                info.notAfter = parseUtcTime(cur.pos, tagLen);
+                info.notAfter = parseUtcTime(cur.data + cur.pos, tagLen);
                 cur.skip(tagLen);
             } else if (tag == 0x18) {
-                info.notAfter = std::string((const char*)cur.pos, tagLen);
+                info.notAfter = std::string((const char*)(cur.data + cur.pos), tagLen);
                 cur.skip(tagLen);
             }
         }
@@ -576,7 +577,7 @@ static CertInfo parseX509Cert(const uint8_t* certData, size_t certLen) {
     // subject
     size_t subjLen;
     if (cur.enter(0x30, subjLen)) {
-        info.subject = parseRdnSequence(cur.pos, subjLen);
+        info.subject = parseRdnSequence(cur.data + cur.pos, subjLen);
         cur.skip(subjLen);
     }
 
@@ -617,6 +618,11 @@ struct BinaryXmlParser {
         uint16_t v = (uint16_t)data[pos] | ((uint16_t)data[pos+1] << 8);
         pos += 2;
         return v;
+    }
+
+    uint8_t u8() {
+        if (pos >= dataLen) return 0;
+        return data[pos++];
     }
 
     uint32_t u32() {
