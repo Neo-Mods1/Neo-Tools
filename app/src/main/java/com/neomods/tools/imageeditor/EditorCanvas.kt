@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Colorize
@@ -41,9 +42,9 @@ fun EditorCanvas(
             .background(Color(0xFF1A1A1A))
             .pointerInput(activeTool) {
                 if (activeTool == EditorTool.EYEDROPPER || activeTool == EditorTool.CLONE_STAMP) {
-                    detectTapGestures { press ->
-                        val x = ((press.position.x - offset.x) / scale).roundToInt()
-                        val y = ((press.position.y - offset.y) / scale).roundToInt()
+                    detectTapGestures { tapOffset ->
+                        val x = ((tapOffset.x - offset.x) / scale).roundToInt()
+                        val y = ((tapOffset.y - offset.y) / scale).roundToInt()
                         onTap?.invoke(x, y)
                     }
                 } else {
