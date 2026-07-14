@@ -33,10 +33,10 @@ android {
 
     defaultConfig {
         applicationId = "com.neomods.tools"
-        minSdk = 30
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        minSdk = v.getProperty("minSdk").toInt()
+        targetSdk = v.getProperty("targetSdk").toInt()
+        versionCode = v.getProperty("appVersionCode").toInt()
+        versionName = v.getProperty("appVersionName")
 
         vectorDrawables {
             useSupportLibrary = false

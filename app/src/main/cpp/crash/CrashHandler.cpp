@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <string>
+#include <cstdio>
 #include <ucontext.h>
 #include <sys/stat.h>
 
