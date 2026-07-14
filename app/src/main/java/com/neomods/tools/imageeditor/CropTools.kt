@@ -27,12 +27,14 @@ fun CropTools(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             OutlinedButton(onClick = { onRotate(-90f) }) {
-                Icon(Icons.AutoMirrored.Filled.RotateLeft, contentDescription = null, modifier = Modifier.size(18.dp))
+                @Suppress("DEPRECATION")
+                Icon(Icons.Default.RotateLeft, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
                 Text("-90°")
             }
             OutlinedButton(onClick = { onRotate(90f) }) {
-                Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = null, modifier = Modifier.size(18.dp))
+                @Suppress("DEPRECATION")
+                Icon(Icons.Default.RotateRight, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
                 Text("+90°")
             }

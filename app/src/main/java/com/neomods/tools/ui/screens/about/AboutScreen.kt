@@ -167,8 +167,9 @@ fun AboutScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            @Suppress("DEPRECATION")
                             Icon(
-                                Icons.AutoMirrored.Filled.Send,
+                                Icons.Default.Send,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
                                 tint = MaterialTheme.colorScheme.primary

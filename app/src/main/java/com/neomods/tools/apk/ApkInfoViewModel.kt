@@ -45,7 +45,8 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
                     apkPath = ai.sourceDir ?: "",
                     processName = ai.processName,
                     targetSdk = ai.targetSdkVersion,
-                    minSdk = ai.minSdk,
+                    @Suppress("DEPRECATION")
+                    minSdk = ai.minSdkVersion,
                     uid = ai.uid,
                     dataDir = ai.dataDir ?: "",
                     nativeLibDir = ai.nativeLibraryDir ?: "",

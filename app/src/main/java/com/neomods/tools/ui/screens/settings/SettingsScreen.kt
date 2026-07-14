@@ -299,8 +299,9 @@ fun ContactRow(title: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(text = title, style = MaterialTheme.typography.bodyLarge)
+        @Suppress("DEPRECATION")
         Icon(
-            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+            imageVector = Icons.Default.OpenInNew,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(18.dp)
