@@ -5,21 +5,16 @@
 // implementation in a `neotools::<category>` namespace. The actual
 // registration of those methods against their Kotlin counterparts happens HERE,
 // in JNI_OnLoad, so each category's translation unit only defines the
-// implementation and never touches registration. Future categories
-// (Hashing, Ciphers, ...) just add a folder, expose its function in the
-// header, and get a Register call below.
+// implementation and never touches registration.
+//
+// NOTE: The native crash handler (sigaction) lives in crash/CrashHandler.cpp
+// and is built as a SEPARATE library (libCrashHandler.so) that gets loaded
+// by NeoToolsApplication BEFORE neotools.so. This ensures signal handlers
+// are installed before any other native code runs.
 // ---------------------------------------------------------------------------
 
 #include <jni.h>
 #include <android/log.h>
-#include <signal.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
-#include <ucontext.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <fcntl.h>
 
 #include "obfuscate.h"
 #include "encoding/base64.hpp"
@@ -36,140 +31,6 @@
 #define LOG_TAG "NeoTools"
 #endif
 
-static struct sigaction old_sa[NSIG];
-
-static const char* signalName(int sig) {
-    switch (sig) {
-        case SIGSEGV: return "SIGSEGV";
-        case SIGABRT: return "SIGABRT";
-        case SIGBUS:  return "SIGBUS";
-        case SIGFPE:  return "SIGFPE";
-        case SIGILL:  return "SIGILL";
-        default:      return "UNKNOWN";
-    }
-}
-
-static std::string getCrashFilePath() {
-    char pkg[256] = {0};
-
-    int fd = open("/proc/self/cmdline", O_RDONLY);
-    if (fd >= 0) {
-        ssize_t len = read(fd, pkg, sizeof(pkg) - 1);
-        close(fd);
-
-        if (len > 0) {
-            pkg[len] = '\0';
-            return std::string("/data/data/") + pkg + "/files/native_crash.txt";
-        }
-    }
-
-    // Fallback
-    return "/data/local/tmp/native_crash.txt";
-}
-
-static void nativeCrashHandler(int sig, siginfo_t* info, void* ucontext) {
-    // Restore default handler so a second crash isn't trapped
-    sigaction(sig, &old_sa[sig], nullptr);
-
-    int fd = -1;
-
-    // Write crash info to a temp file the Kotlin side will read
-    std::string crashPath = getCrashFilePath();
-
-    fd = open(crashPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (fd >= 0) {
-        const char* header =
-            "========================================\n"
-            "  Neo Tools - Native Crash Report\n"
-            "========================================\n\n";
-        write(fd, header, strlen(header));
-
-        const char* sigLine = "Signal: ";
-        write(fd, sigLine, strlen(sigLine));
-        const char* name = signalName(sig);
-        write(fd, name, strlen(name));
-        write(fd, "\n", 1);
-
-        // Fault address
-        if (info && info->si_addr) {
-            const char* addrLine = "Fault addr: ";
-            write(fd, addrLine, strlen(addrLine));
-            char hex[20];
-            snprintf(hex, sizeof(hex), "%p", info->si_addr);
-            write(fd, hex, strlen(hex));
-            write(fd, "\n", 1);
-        }
-
-        // Signal code
-        if (info) {
-            const char* codeLine = "Signal code: ";
-            write(fd, codeLine, strlen(codeLine));
-            char codeBuf[16];
-            snprintf(codeBuf, sizeof(codeBuf), "%d", info->si_code);
-            write(fd, codeBuf, strlen(codeBuf));
-            write(fd, "\n", 1);
-        }
-
-        // PC register from ucontext
-        if (ucontext) {
-            ucontext_t* uc = (ucontext_t*)ucontext;
-            const char* pcLine = "PC: 0x";
-            write(fd, pcLine, strlen(pcLine));
-            char pcHex[20];
-#if defined(__aarch64__)
-            snprintf(pcHex, sizeof(pcHex), "%llx",
-                     (unsigned long long)uc->uc_mcontext.pc);
-#elif defined(__arm__)
-            snprintf(pcHex, sizeof(pcHex), "%llx",
-                     (unsigned long long)uc->uc_mcontext.arm_pc);
-#else
-            snprintf(pcHex, sizeof(pcHex), "unknown");
-#endif
-            write(fd, pcHex, strlen(pcHex));
-            write(fd, "\n", 1);
-        }
-
-        write(fd, "\n", 1);
-
-        // Grab last 64 logcat error lines
-        const char* logcatCmd =
-            "logcat -d -t 64 *:E 2>/dev/null";
-        const char* logcatHeader =
-            "========================================\n"
-            "  Logcat (last 64 lines)\n"
-            "========================================\n\n";
-        write(fd, logcatHeader, strlen(logcatHeader));
-
-        FILE* pipe = popen(logcatCmd, "r");
-        if (pipe) {
-            char line[512];
-            while (fgets(line, sizeof(line), pipe)) {
-                write(fd, line, strlen(line));
-            }
-            pclose(pipe);
-        }
-
-        close(fd);
-    }
-
-    // Raise the signal again so the process dies normally (and Android's
-    // tombstone handler can write the full core dump if needed)
-    tgkill(getpid(), gettid(), sig);
-}
-
-static void installSignalHandlers() {
-    static const int signals[] = { SIGSEGV, SIGABRT, SIGBUS, SIGFPE, SIGILL };
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_sigaction = nativeCrashHandler;
-    sa.sa_flags = SA_SIGINFO;
-    sigemptyset(&sa.sa_mask);
-
-    for (int sig : signals) {
-        sigaction(sig, &sa, &old_sa[sig]);
-    }
-}
-
 namespace {
 
 int RegisterEncoding(JNIEnv* env) {
@@ -181,9 +42,7 @@ int RegisterEncoding(JNIEnv* env) {
     };
 
     jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));
-    if (clazz == nullptr) {
-        return JNI_ERR;
-    }
+    if (clazz == nullptr) return JNI_ERR;
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0) {
         return JNI_ERR;
     }
@@ -201,9 +60,7 @@ int RegisterCppConverter(JNIEnv* env) {
     };
 
     jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));
-    if (clazz == nullptr) {
-        return JNI_ERR;
-    }
+    if (clazz == nullptr) return JNI_ERR;
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0) {
         return JNI_ERR;
     }
@@ -324,9 +181,7 @@ int RegisterImageEditor(JNIEnv* env) {
     };
 
     jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));
-    if (clazz == nullptr) {
-        return JNI_ERR;
-    }
+    if (clazz == nullptr) return JNI_ERR;
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0) {
         return JNI_ERR;
     }
@@ -356,9 +211,7 @@ int RegisterApkTools(JNIEnv* env) {
     };
 
     jclass clazz = env->FindClass(OBFUSCATE("com/neomods/tools/native/NeoNative"));
-    if (clazz == nullptr) {
-        return JNI_ERR;
-    }
+    if (clazz == nullptr) return JNI_ERR;
     if (env->RegisterNatives(clazz, methods, sizeof(methods) / sizeof(methods[0])) != 0) {
         return JNI_ERR;
     }
@@ -368,10 +221,6 @@ int RegisterApkTools(JNIEnv* env) {
 extern "C"
 JNIEXPORT jint JNICALL
 JNI_OnLoad(JavaVM* vm, void* /* reserved */) {
-    // Install native crash signal handlers immediately so we catch crashes
-    // even during registration or library init.
-    installSignalHandlers();
-
     JNIEnv* env = nullptr;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
         return JNI_ERR;

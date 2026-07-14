@@ -3,10 +3,10 @@ package com.neomods.tools.crash
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.Process
 import com.neomods.tools.BuildConfig
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.text.SimpleDateFormat
@@ -14,11 +14,11 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Global uncaught-exception handler.
+ * Global uncaught-exception handler for Java/Kotlin crashes.
  *
- * Captures a detailed crash log (device, app version, exception, stack trace
- * and a tail of logcat), then launches [CrashActivity] instead of letting the
- * process die silently.
+ * Works together with the native [neotools::crash] signal handler:
+ * - Java/Kotlin crash → this handler → launches [CrashActivity] immediately
+ * - Native signal crash → libCrashHandler.so writes file → next launch reads it → [CrashActivity]
  *
  * Ported from the CODE-IDE crash system (com.neo.ide.crash.CrashHandler). also owned by me neo mods
  */
@@ -31,10 +31,6 @@ class CrashHandler private constructor(context: Context) : Thread.UncaughtExcept
         @Volatile
         private var installed = false
 
-        /**
-         * Install the global crash handler. Safe to call multiple times —
-         * only the first call takes effect.
-         */
         fun install(context: Context) {
             if (installed) return
             installed = true
@@ -71,13 +67,15 @@ class CrashHandler private constructor(context: Context) : Thread.UncaughtExcept
             }
             appContext.startActivity(intent)
 
-            // Give CrashActivity time to start, then kill this process
-            Thread.sleep(500)
+            // Kill the process after CrashActivity has had time to start.
+            // Using Handler.postDelayed instead of Thread.sleep so we don't
+            // block the crashing thread (which may be the main thread).
+            Handler(Looper.getMainLooper()).postDelayed({
+                Process.killProcess(Process.myPid())
+            }, 1500)
         } catch (_: Throwable) {
-            // Last resort — if anything above fails, just delegate to default
-        } finally {
+            // Last resort — kill immediately
             Process.killProcess(Process.myPid())
-            System.exit(1)
         }
     }
 
@@ -109,24 +107,6 @@ class CrashHandler private constructor(context: Context) : Thread.UncaughtExcept
         val sw = StringWriter()
         throwable.printStackTrace(PrintWriter(sw))
         sb.appendLine(sw.toString())
-
-        sb.appendLine()
-        sb.appendLine("========================================")
-        sb.appendLine("  Logcat (last 200 lines)")
-        sb.appendLine("========================================")
-        sb.appendLine()
-
-        try {
-            val process = Runtime.getRuntime().exec(arrayOf("logcat", "-d", "-t", "200", "*:E"))
-            val reader = BufferedReader(InputStreamReader(process.inputStream))
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                sb.appendLine(line)
-            }
-            reader.close()
-        } catch (_: Exception) {
-            sb.appendLine("Failed to read logcat")
-        }
 
         return sb.toString()
     }

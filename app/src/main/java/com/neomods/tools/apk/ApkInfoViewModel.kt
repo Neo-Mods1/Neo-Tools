@@ -1,7 +1,9 @@
 package com.neomods.tools.apk
 
 import android.app.Application
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,8 +32,13 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
 
     fun loadInstalledApps() {
         viewModelScope.launch(Dispatchers.IO) {
-            val apps = pm.getInstalledPackages(PackageManager.GET_META_DATA)
-                .filter { it.applicationInfo != null }
+            val apps = pm.getInstalledPackages(0)
+                .filter { pkg ->
+                    val flags = pkg.applicationInfo?.flags ?: 0
+                    // User-installed apps only: exclude system, updated system, and suspended
+                    (flags and ApplicationInfo.FLAG_SYSTEM) == 0 &&
+                    (flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0
+                }
                 .sortedBy { pm.getApplicationLabel(it.applicationInfo!!).toString().lowercase() }
 
             val appList = apps.map { pkg ->
@@ -41,7 +48,7 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
                     label = pm.getApplicationLabel(ai).toString(),
                     versionName = pkg.versionName ?: "",
                     versionCode = pkg.longVersionCode,
-                    icon = pm.getApplicationIcon(ai),
+                    icon = loadIconBitmap(pm, ai),
                     apkPath = ai.sourceDir ?: "",
                     processName = ai.processName,
                     targetSdk = ai.targetSdkVersion,
@@ -51,13 +58,13 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
                     nativeLibDir = ai.nativeLibraryDir ?: "",
                     sourceDir = ai.sourceDir ?: "",
                     sharedUserId = pkg.sharedUserId ?: "",
-                    installerPackage = try { pm.getInstallSourceInfo(pkg.packageName).installingPackageName ?: "" } catch (_: Exception) { "" },
+                    installerPackage = "", // loaded lazily in inspector
                     firstInstallTime = pkg.firstInstallTime,
                     lastUpdateTime = pkg.lastUpdateTime,
-                    debuggable = (ai.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0,
-                    allowBackup = (ai.flags and android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP) != 0,
-                    extractNativeLibs = (ai.flags and android.content.pm.ApplicationInfo.FLAG_EXTRACT_NATIVE_LIBS) != 0,
-                    testOnly = (ai.flags and android.content.pm.ApplicationInfo.FLAG_TEST_ONLY) != 0,
+                    debuggable = (ai.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0,
+                    allowBackup = (ai.flags and ApplicationInfo.FLAG_ALLOW_BACKUP) != 0,
+                    extractNativeLibs = (ai.flags and ApplicationInfo.FLAG_EXTRACT_NATIVE_LIBS) != 0,
+                    testOnly = (ai.flags and ApplicationInfo.FLAG_TEST_ONLY) != 0,
                 )
             }
 
@@ -68,6 +75,19 @@ class ApkInfoViewModel(app: Application) : AndroidViewModel(app) {
                     isLoading = false
                 )
             }
+        }
+    }
+
+    private fun loadIconBitmap(pm: PackageManager, ai: ApplicationInfo): Bitmap? {
+        return try {
+            val drawable = pm.getApplicationIcon(ai)
+            val bitmap = Bitmap.createBitmap(96, 96, Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bitmap)
+            drawable.setBounds(0, 0, 96, 96)
+            drawable.draw(canvas)
+            bitmap
+        } catch (_: Exception) {
+            null
         }
     }
 
@@ -337,7 +357,7 @@ data class AppListItem(
     val label: String,
     val versionName: String,
     val versionCode: Long,
-    val icon: Drawable?,
+    val icon: Bitmap?,
     val apkPath: String,
     val processName: String,
     val targetSdk: Int,

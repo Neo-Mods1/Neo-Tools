@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -217,15 +216,15 @@ private fun AppListItemRow(
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        app.icon?.let { drawable ->
+        app.icon?.let { bitmap ->
             Image(
-                bitmap = drawable.toBitmap(48, 48).asImageBitmap(),
+                bitmap = bitmap.asImageBitmap(),
                 contentDescription = app.label,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
             )
-        } ?: Box(
+        } else Box(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(12.dp))
@@ -284,9 +283,9 @@ private fun AppIconDock(
                     .padding(4.dp),
                 contentAlignment = Alignment.Center
             ) {
-                app.icon?.let { drawable ->
+                app.icon?.let { bitmap ->
                     Image(
-                        bitmap = drawable.toBitmap(40, 40).asImageBitmap(),
+                        bitmap = bitmap.asImageBitmap(),
                         contentDescription = app.label,
                         modifier = Modifier
                             .size(40.dp)

@@ -1,14 +1,14 @@
 package com.neomods.tools.apk
 
 import android.content.pm.PackageInfo
-import android.graphics.drawable.Drawable
+import android.graphics.Bitmap
 
 data class ApkInfo(
     val packageName: String = "",
     val label: String = "",
     val versionName: String = "",
     val versionCode: Long = 0,
-    val icon: Drawable? = null,
+    val icon: Bitmap? = null,
     val apkPath: String = "",
     val appName: String = "",
     // From PackageManager

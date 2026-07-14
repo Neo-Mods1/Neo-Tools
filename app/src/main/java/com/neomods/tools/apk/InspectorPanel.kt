@@ -25,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -101,9 +100,9 @@ private fun OverviewSection(apkInfo: ApkInfo, showManifestDialog: () -> Unit) {
     // App header
     InfoCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            apkInfo.icon?.let { drawable ->
+            apkInfo.icon?.let { bitmap ->
                 androidx.compose.foundation.Image(
-                    bitmap = drawable.toBitmap(64, 64).asImageBitmap(),
+                    bitmap = bitmap.asImageBitmap(),
                     contentDescription = apkInfo.label,
                     modifier = Modifier
                         .size(64.dp)
